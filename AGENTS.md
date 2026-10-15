@@ -16,3 +16,8 @@ Exemplos válidos:
 - `fix(core): correct ISBN validation`
 - `test: add tests for RegisterBook use case`
 - `docs: update README with folder structure`
+
+## Dependências
+
+- As dependências devem ser travadas em **versões exatas** (sem caret `^` ou til `~`) no `package.json`.
+- O `package-lock.json` é o lockfile de referência e deve ser versionado junto com o projeto.
