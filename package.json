@@ -1,0 +1,23 @@
+{
+  "name": "book-core",
+  "version": "1.0.0",
+  "description": "Núcleo de domínio de livros independente de frameworks, seguindo Arquitetura Hexagonal + DDD, pronto para ser consumido por adaptadores (API REST, CLI, repositório PostgreSQL, memória, etc.).",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
