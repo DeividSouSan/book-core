@@ -23,6 +23,7 @@ export class ISBN {
   ) {}
 
   static create(receivedValue: string): ISBN {
+    // Hyphens and spaces are presentation, not part of the value: normalize before validating.
     const normalized = receivedValue.replace(/[-\s]/g, "");
 
     if (normalized.length === 0) {
@@ -45,6 +46,7 @@ export class ISBN {
   }
 
   private static parseIsbn10(receivedValue: string, normalized: string): ISBN {
+    // The ISBN-10 check digit X is case-insensitive, so uppercase before validating.
     const value = normalized.toUpperCase();
     const invalidCharacters = [
       ...new Set(
