@@ -61,21 +61,12 @@ export class ISBN {
       throw new InvalidISBNCharactersError(receivedValue, invalidCharacters, "isbn10");
     }
 
-    let weightedSum = 0;
-    for (let index = 0; index < ISBN_10_CHECK_DIGIT_INDEX; index += 1) {
-      weightedSum += Number(value[index]) * (ISBN_10_LENGTH - index);
-    }
-
     const actualCheckDigit = value[ISBN_10_CHECK_DIGIT_INDEX];
-    const checkDigitValue = actualCheckDigit === "X" ? ISBN_10_X_VALUE : Number(actualCheckDigit);
+    const expectedCheckDigit = ISBN.calculateISBN10CheckDigit(
+      value.slice(0, ISBN_10_CHECK_DIGIT_INDEX),
+    );
 
-    if ((weightedSum + checkDigitValue) % ISBN_10_CHECKSUM_MODULUS !== 0) {
-      const expectedDigitValue =
-        (ISBN_10_CHECKSUM_MODULUS - (weightedSum % ISBN_10_CHECKSUM_MODULUS)) %
-        ISBN_10_CHECKSUM_MODULUS;
-      const expectedCheckDigit =
-        expectedDigitValue === ISBN_10_X_VALUE ? "X" : String(expectedDigitValue);
-
+    if (actualCheckDigit !== expectedCheckDigit) {
       throw new InvalidISBNChecksumError(
         receivedValue,
         "isbn10",
@@ -96,26 +87,52 @@ export class ISBN {
       throw new InvalidISBNCharactersError(receivedValue, invalidCharacters, "isbn13");
     }
 
-    let weightedSum = 0;
-    for (let index = 0; index < ISBN_13_CHECK_DIGIT_INDEX; index += 1) {
-      const weight = index % 2 === 0 ? ISBN_13_ODD_POSITION_WEIGHT : ISBN_13_EVEN_POSITION_WEIGHT;
-      weightedSum += Number(normalized[index]) * weight;
-    }
-
-    const expectedCheckDigit = String(
-      (ISBN_13_CHECKSUM_MODULUS - (weightedSum % ISBN_13_CHECKSUM_MODULUS)) %
-        ISBN_13_CHECKSUM_MODULUS,
+    const actualCheckDigit = normalized[ISBN_13_CHECK_DIGIT_INDEX];
+    const expectedCheckDigit = ISBN.calculateISBN13CheckDigit(
+      normalized.slice(0, ISBN_13_CHECK_DIGIT_INDEX),
     );
 
-    if (normalized[ISBN_13_CHECK_DIGIT_INDEX] !== expectedCheckDigit) {
+    if (actualCheckDigit !== expectedCheckDigit) {
       throw new InvalidISBNChecksumError(
         receivedValue,
         "isbn13",
         expectedCheckDigit,
-        normalized[ISBN_13_CHECK_DIGIT_INDEX],
+        actualCheckDigit,
       );
     }
 
     return new ISBN(normalized, "isbn13");
+  }
+
+  // ISBN-10 check digit: each digit is weighted from 10 down to 1 and the total must be a
+  // multiple of 11. "X" is used when the check digit value is 10.
+  private static calculateISBN10CheckDigit(digitsWithoutCheckDigit: string): string {
+    let weightedSum = 0;
+
+    for (let index = 0; index < digitsWithoutCheckDigit.length; index += 1) {
+      weightedSum += Number(digitsWithoutCheckDigit[index]) * (ISBN_10_LENGTH - index);
+    }
+
+    const checkDigitValue =
+      (ISBN_10_CHECKSUM_MODULUS - (weightedSum % ISBN_10_CHECKSUM_MODULUS)) %
+      ISBN_10_CHECKSUM_MODULUS;
+
+    return checkDigitValue === ISBN_10_X_VALUE ? "X" : String(checkDigitValue);
+  }
+
+  // ISBN-13 check digit: odd positions (1-based) weigh 1 and even positions weigh 3; the
+  // check digit (which weighs 1) makes the total a multiple of ISBN_13_CHECKSUM_MODULUS (10).
+  private static calculateISBN13CheckDigit(digitsWithoutCheckDigit: string): string {
+    let weightedSum = 0;
+
+    for (let index = 0; index < digitsWithoutCheckDigit.length; index += 1) {
+      const weight = index % 2 === 0 ? ISBN_13_ODD_POSITION_WEIGHT : ISBN_13_EVEN_POSITION_WEIGHT;
+      weightedSum += Number(digitsWithoutCheckDigit[index]) * weight;
+    }
+
+    return String(
+      (ISBN_13_CHECKSUM_MODULUS - (weightedSum % ISBN_13_CHECKSUM_MODULUS)) %
+        ISBN_13_CHECKSUM_MODULUS,
+    );
   }
 }
