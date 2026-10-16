@@ -15,7 +15,6 @@ book-core/
 └── tests/               # Testes unitários e de integração
 ```
 
-## Regras de trabalho (AGENTS.md)
+## Regras de trabalho
 
-- Não faça one-shot de nada, faça implementações de escopo curto.
-- Não tome decisões sozinho, decisões precisam ser tomadas em conjunto.
+As regras de contribuição estão centralizadas em [AGENTS.md](./AGENTS.md).
