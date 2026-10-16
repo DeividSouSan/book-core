@@ -1,4 +1,4 @@
-import { DomainError } from "./domain-error";
+import { DomainError } from "./domain.error";
 
 export class EmptyISBNError extends DomainError {
   constructor(public readonly receivedValue: string) {

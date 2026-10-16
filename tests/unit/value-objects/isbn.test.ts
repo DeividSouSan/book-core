@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DomainError } from "../../../core/domain/errors/domain-error";
+import { DomainError } from "../../../core/domain/errors/domain.error";
 import { EmptyISBNError } from "../../../core/domain/errors/empty-isbn.error";
 import { InvalidISBNCharactersError } from "../../../core/domain/errors/invalid-isbn-characters.error";
 import { InvalidISBNChecksumError } from "../../../core/domain/errors/invalid-isbn-checksum.error";

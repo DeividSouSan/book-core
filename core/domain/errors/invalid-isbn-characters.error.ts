@@ -1,5 +1,5 @@
 import type { ISBNFormat } from "../value-objects/isbn";
-import { DomainError } from "./domain-error";
+import { DomainError } from "./domain.error";
 
 export class InvalidISBNCharactersError extends DomainError {
   constructor(
