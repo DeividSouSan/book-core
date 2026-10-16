@@ -6,6 +6,12 @@ Não tome decisões sozinho, decisões precisam ser tomadas em conjunto.
 
 Escreva o domínio em inglês.
 
+## Código
+
+- Evite números mágicos: crie constantes com nomes semânticos para valores de domínio que aparecem repetidos no código.
+- Fórmulas e cálculos devem ser extraídos para funções com nomes descritivos, acompanhados de um comentário curto quando a regra de negócio não for autoexplicativa.
+- Escreva código que seja LEGÍVEL para humanos e ENTENDÍVEL por um júnior, mesmo que o foco seja que agentes leiam. Procure soluções SIMPLES antes de sugerir SOFISTICADAS.
+
 ## Testes
 
 - Sempre escreva os testes primeiro (TDD): crie o teste, veja-o falhar, então implemente.
