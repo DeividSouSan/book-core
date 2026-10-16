@@ -2,6 +2,17 @@ import { EmptyISBNError } from "../errors/empty-isbn.error";
 import { InvalidISBNCharactersError } from "../errors/invalid-isbn-characters.error";
 import { InvalidISBNChecksumError } from "../errors/invalid-isbn-checksum.error";
 import { InvalidISBNLengthError } from "../errors/invalid-isbn-length.error";
+import {
+  ISBN_10_CHECK_DIGIT_INDEX,
+  ISBN_10_CHECKSUM_MODULUS,
+  ISBN_10_LENGTH,
+  ISBN_10_X_VALUE,
+  ISBN_13_CHECK_DIGIT_INDEX,
+  ISBN_13_CHECKSUM_MODULUS,
+  ISBN_13_EVEN_POSITION_WEIGHT,
+  ISBN_13_LENGTH,
+  ISBN_13_ODD_POSITION_WEIGHT,
+} from "./isbn.constants";
 
 export type ISBNFormat = "isbn10" | "isbn13";
 
@@ -18,11 +29,11 @@ export class ISBN {
       throw new EmptyISBNError(receivedValue);
     }
 
-    if (normalized.length === 10) {
+    if (normalized.length === ISBN_10_LENGTH) {
       return ISBN.parseIsbn10(receivedValue, normalized);
     }
 
-    if (normalized.length === 13) {
+    if (normalized.length === ISBN_13_LENGTH) {
       return ISBN.parseIsbn13(receivedValue, normalized);
     }
 
@@ -40,7 +51,8 @@ export class ISBN {
         value
           .split("")
           .filter(
-            (character, index) => !/\d/.test(character) && !(character === "X" && index === 9),
+            (character, index) =>
+              !/\d/.test(character) && !(character === "X" && index === ISBN_10_CHECK_DIGIT_INDEX),
           ),
       ),
     ];
@@ -50,17 +62,26 @@ export class ISBN {
     }
 
     let weightedSum = 0;
-    for (let index = 0; index < 9; index += 1) {
-      weightedSum += Number(value[index]) * (10 - index);
+    for (let index = 0; index < ISBN_10_CHECK_DIGIT_INDEX; index += 1) {
+      weightedSum += Number(value[index]) * (ISBN_10_LENGTH - index);
     }
 
-    const checkDigitValue = value[9] === "X" ? 10 : Number(value[9]);
+    const actualCheckDigit = value[ISBN_10_CHECK_DIGIT_INDEX];
+    const checkDigitValue = actualCheckDigit === "X" ? ISBN_10_X_VALUE : Number(actualCheckDigit);
 
-    if ((weightedSum + checkDigitValue) % 11 !== 0) {
-      const expectedDigitValue = (11 - (weightedSum % 11)) % 11;
-      const expectedCheckDigit = expectedDigitValue === 10 ? "X" : String(expectedDigitValue);
+    if ((weightedSum + checkDigitValue) % ISBN_10_CHECKSUM_MODULUS !== 0) {
+      const expectedDigitValue =
+        (ISBN_10_CHECKSUM_MODULUS - (weightedSum % ISBN_10_CHECKSUM_MODULUS)) %
+        ISBN_10_CHECKSUM_MODULUS;
+      const expectedCheckDigit =
+        expectedDigitValue === ISBN_10_X_VALUE ? "X" : String(expectedDigitValue);
 
-      throw new InvalidISBNChecksumError(receivedValue, "isbn10", expectedCheckDigit, value[9]);
+      throw new InvalidISBNChecksumError(
+        receivedValue,
+        "isbn10",
+        expectedCheckDigit,
+        actualCheckDigit,
+      );
     }
 
     return new ISBN(value, "isbn10");
@@ -76,18 +97,22 @@ export class ISBN {
     }
 
     let weightedSum = 0;
-    for (let index = 0; index < 12; index += 1) {
-      weightedSum += Number(normalized[index]) * (index % 2 === 0 ? 1 : 3);
+    for (let index = 0; index < ISBN_13_CHECK_DIGIT_INDEX; index += 1) {
+      const weight = index % 2 === 0 ? ISBN_13_ODD_POSITION_WEIGHT : ISBN_13_EVEN_POSITION_WEIGHT;
+      weightedSum += Number(normalized[index]) * weight;
     }
 
-    const expectedCheckDigit = String((10 - (weightedSum % 10)) % 10);
+    const expectedCheckDigit = String(
+      (ISBN_13_CHECKSUM_MODULUS - (weightedSum % ISBN_13_CHECKSUM_MODULUS)) %
+        ISBN_13_CHECKSUM_MODULUS,
+    );
 
-    if (normalized[12] !== expectedCheckDigit) {
+    if (normalized[ISBN_13_CHECK_DIGIT_INDEX] !== expectedCheckDigit) {
       throw new InvalidISBNChecksumError(
         receivedValue,
         "isbn13",
         expectedCheckDigit,
-        normalized[12],
+        normalized[ISBN_13_CHECK_DIGIT_INDEX],
       );
     }
 
