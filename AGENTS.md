@@ -1,8 +1,15 @@
 Não faça one-shot de nada.
 
-Implemente sempre o mínimo possível, muitas alterações são impossíveis de revisar. Sempre faça o menor escopo útil possível.
+Sempre sugira o menor escopo útil possível, vamos trabalhar modificações pequenas, mas frequentes.
 
 Não tome decisões sozinho, decisões precisam ser tomadas em conjunto.
+
+Escreva o domínio em inglês.
+
+## Testes
+
+- Sempre escreva os testes primeiro (TDD): crie o teste, veja-o falhar, então implemente.
+- Testes unitários ficam em `tests/unit/...`, espelhando a estrutura de `core/`.
 
 ## Commits
 
