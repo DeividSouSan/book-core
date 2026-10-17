@@ -7,7 +7,7 @@ export class BookRepositoryMemory implements BookRepository {
   private readonly books = new Map<string, Book>();
 
   async save(book: Book): Promise<void> {
-    this.books.set(book.id, book);
+    this.books.set(book.id.value, book);
   }
 
   async findById(id: string): Promise<Book | undefined> {

@@ -3,10 +3,11 @@ import { BookNotFoundError } from "../../../../core/domain/errors/book-not-found
 import { Book } from "../../../../core/domain/entities/book";
 import { Title } from "../../../../core/domain/value-objects/title";
 import { ISBN } from "../../../../core/domain/value-objects/isbn";
+import { Uuid } from "../../../../core/domain/value-objects/uuid";
 import type { BookRepository } from "../../../../core/application/ports/book-repository.port";
 
 const mockBook = Book.restore({
-  id: "mock-id",
+  id: Uuid.create("550e8400-e29b-41d4-a716-446655440000"),
   title: Title.create("Mock Title"),
   authors: [],
   isbn: ISBN.create("9780261102217"),

@@ -14,28 +14,31 @@ npm install ../book-core
 
 Isso cria um symlink. O script `prepare` do pacote roda `npm run build` automaticamente e gera a pasta `dist/`, que é o ponto de entrada (`main`).
 
-> Requer Node 18+ (usa `crypto.randomUUID()`).
+> Sem dependência de runtime: o núcleo não importa `node:crypto` nem nenhum módulo de plataforma. Quem chama gera o id (UUID) e injeta no `Book.create` — funciona em Node, navegador, edge/workers e MCP sem polyfill.
 
 ## Uso rápido
 
 ```ts
 import { Book, BookRepositoryMemory, BookRepositoryLocalStorage, DomainError } from "book-core";
 
-// Criar um livro (valida título, autores, ISBN, status, rating e idioma)
-const book = Book.create({
-  title: "The Hobbit",
-  authors: ["J.R.R. Tolkien"],
-  isbn: "978-0-261-10221-7",
-  status: "READING",
-  rating: 4,
-  language: "en",
-});
+// Criar um livro (o chamador gera o id e injeta; valida id, título, autores, ISBN, status, rating e idioma)
+const book = Book.create(
+  {
+    title: "The Hobbit",
+    authors: ["J.R.R. Tolkien"],
+    isbn: "978-0-261-10221-7",
+    status: "READING",
+    rating: 4,
+    language: "en",
+  },
+  crypto.randomUUID(), // Node 18+, navegador e edge: WebCrypto global
+);
 
 // Persistir (memória — ideal para Node/testes)
 const repository = new BookRepositoryMemory();
 await repository.save(book);
 
-const found = await repository.getById(book.id);
+const found = await repository.getById(book.id.value);
 console.log(found.title.sortKey()); // "Hobbit" — ignora o artigo para ordenação
 
 // No navegador, troque o adaptador (persiste em localStorage):
@@ -56,16 +59,16 @@ books.sort((a, b) => a.title.sortKey(onlyThe).localeCompare(b.title.sortKey(only
 
 ## O que o pacote exporta
 
-| Categoria            | Exports                                                                                                                                                                                                                                                           |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entidade             | `Book`                                                                                                                                                                                                                                                            |
-| Value Objects        | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`                                                                                                                                                                                                  |
-| Ordenação            | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                     |
-| Constantes           | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, entre outras                                                  |
-| Portas (interfaces)  | `BookRepository` (tipo)                                                                                                                                                                                                                                           |
-| Adaptadores          | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                 |
-| Erros de domínio     | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `InvalidLanguageError`, `InvalidReadingStatusError`, `InvalidRatingError` |
-| Erros de adaptadores | `StorageCorruptedError`                                                                                                                                                                                                                                           |
+| Categoria            | Exports                                                                                                                                                                                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entidade             | `Book`                                                                                                                                                                                                                                                                                |
+| Value Objects        | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`, `Uuid`                                                                                                                                                                                                              |
+| Ordenação            | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                                         |
+| Constantes           | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, `UUID_PATTERN`, entre outras                                                      |
+| Portas (interfaces)  | `BookRepository` (tipo)                                                                                                                                                                                                                                                               |
+| Adaptadores          | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                                     |
+| Erros de domínio     | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `InvalidLanguageError`, `InvalidReadingStatusError`, `InvalidRatingError`, `InvalidUuidError` |
+| Erros de adaptadores | `StorageCorruptedError`                                                                                                                                                                                                                                                               |
 
 ## Tratando erros
 
@@ -75,7 +78,10 @@ Todos os erros estendem `DomainError` e carregam um `code` legível por máquina
 import { Book, DomainError, EmptyTitleError } from "book-core";
 
 try {
-  Book.create({ title: "  ", authors: [], isbn: "978-0-261-10221-7" });
+  Book.create(
+    { title: "  ", authors: [], isbn: "978-0-261-10221-7" },
+    "550e8400-e29b-41d4-a716-446655440000",
+  );
 } catch (error) {
   if (error instanceof EmptyTitleError) {
     console.log(error.code); // "TITLE.EMPTY"
@@ -88,7 +94,7 @@ try {
 }
 ```
 
-Principais códigos: `BOOK.NOT_FOUND`, `ISBN.EMPTY`, `ISBN.INVALID_LENGTH`, `ISBN.INVALID_CHARACTERS`, `ISBN.INVALID_CHECKSUM`, `TITLE.EMPTY`, `AUTHOR.EMPTY`, `LANGUAGE.INVALID`, `READING_STATUS.INVALID`, `RATING.INVALID`, `STORAGE.CORRUPTED`.
+Principais códigos: `BOOK.NOT_FOUND`, `ISBN.EMPTY`, `ISBN.INVALID_LENGTH`, `ISBN.INVALID_CHARACTERS`, `ISBN.INVALID_CHECKSUM`, `TITLE.EMPTY`, `AUTHOR.EMPTY`, `LANGUAGE.INVALID`, `READING_STATUS.INVALID`, `RATING.INVALID`, `UUID.INVALID`, `STORAGE.CORRUPTED`.
 
 ## Estrutura de pastas
 

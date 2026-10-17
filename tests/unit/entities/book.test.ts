@@ -7,6 +7,7 @@ import { InvalidISBNLengthError } from "../../../core/domain/errors/invalid-isbn
 import { InvalidReadingStatusError } from "../../../core/domain/errors/invalid-reading-status.error";
 import { InvalidRatingError } from "../../../core/domain/errors/invalid-rating.error";
 import { InvalidLanguageError } from "../../../core/domain/errors/invalid-language.error";
+import { InvalidUuidError } from "../../../core/domain/errors/invalid-uuid.error";
 import { Book } from "../../../core/domain/entities/book";
 import { Title } from "../../../core/domain/value-objects/title";
 import { Author } from "../../../core/domain/value-objects/author";
@@ -14,6 +15,7 @@ import { ISBN } from "../../../core/domain/value-objects/isbn";
 import { ReadingStatus } from "../../../core/domain/value-objects/reading-status";
 import { Rating } from "../../../core/domain/value-objects/rating";
 import { Language } from "../../../core/domain/value-objects/language";
+import { Uuid } from "../../../core/domain/value-objects/uuid";
 
 function catchError(action: () => unknown): unknown {
   try {
@@ -24,6 +26,9 @@ function catchError(action: () => unknown): unknown {
   }
 }
 
+const FIRST_UUID = "550e8400-e29b-41d4-a716-446655440000";
+const SECOND_UUID = "6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b";
+
 describe("Book", () => {
   const validProps = {
     title: "The Hobbit",
@@ -32,56 +37,74 @@ describe("Book", () => {
   };
 
   describe("create", () => {
-    it("creates a book with typed value objects and generates a UUID id", () => {
-      const book = Book.create(validProps);
+    it("creates a book with the injected id as a typed Uuid value object", () => {
+      const book = Book.create(validProps, FIRST_UUID);
 
-      expect(book.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-      );
+      expect(book.id).toBeInstanceOf(Uuid);
+      expect(book.id.value).toBe(FIRST_UUID);
       expect(book.title.value).toBe("The Hobbit");
       expect(book.isbn.value).toBe("9780261102217");
       expect(book.authors).toHaveLength(1);
       expect(book.authors[0].value).toBe("J.R.R. Tolkien");
     });
 
+    it("throws InvalidUuidError for a non-UUID id", () => {
+      const error = catchError(() => Book.create(validProps, "fixed-id-1234"));
+
+      expect(error).toBeInstanceOf(InvalidUuidError);
+      expect((error as InvalidUuidError).code).toBe("UUID.INVALID");
+      expect((error as InvalidUuidError).receivedValue).toBe("fixed-id-1234");
+    });
+
     it("trims title and author names", () => {
-      const book = Book.create({
-        title: "  The Hobbit  ",
-        authors: ["  J.R.R. Tolkien  "],
-        isbn: "978-0-261-10221-7",
-      });
+      const book = Book.create(
+        {
+          title: "  The Hobbit  ",
+          authors: ["  J.R.R. Tolkien  "],
+          isbn: "978-0-261-10221-7",
+        },
+        FIRST_UUID,
+      );
 
       expect(book.title.value).toBe("The Hobbit");
       expect(book.authors[0].value).toBe("J.R.R. Tolkien");
     });
 
     it("accepts an empty authors list — unknown author is a valid catalogue state", () => {
-      const book = Book.create({
-        title: "Anonymous Folk Tale",
-        authors: [],
-        isbn: "978-0-261-10221-7",
-      });
+      const book = Book.create(
+        {
+          title: "Anonymous Folk Tale",
+          authors: [],
+          isbn: "978-0-261-10221-7",
+        },
+        FIRST_UUID,
+      );
 
       expect(book.authors).toEqual([]);
     });
 
-    it("generates different ids for two books with identical data — identity comes from id, not value", () => {
-      const first = Book.create(validProps);
-      const second = Book.create(validProps);
+    it("distinguishes books by injected id — identity comes from id, not value", () => {
+      const first = Book.create(validProps, FIRST_UUID);
+      const second = Book.create(validProps, SECOND_UUID);
 
-      expect(first.id).not.toBe(second.id);
+      expect(first.id.value).not.toBe(second.id.value);
       expect(first.equals(second)).toBe(false);
     });
 
     it("is equal to itself", () => {
-      const book = Book.create(validProps);
+      const book = Book.create(validProps, FIRST_UUID);
 
       expect(book.equals(book)).toBe(true);
     });
+  });
 
+  describe("create validation", () => {
     it("throws EmptyTitleError propagating title validation", () => {
       const error = catchError(() =>
-        Book.create({ title: "", authors: ["J.R.R. Tolkien"], isbn: "978-0-261-10221-7" }),
+        Book.create(
+          { title: "", authors: ["J.R.R. Tolkien"], isbn: "978-0-261-10221-7" },
+          FIRST_UUID,
+        ),
       );
 
       expect(error).toBeInstanceOf(EmptyTitleError);
@@ -90,7 +113,7 @@ describe("Book", () => {
 
     it("throws EmptyAuthorError propagating author validation", () => {
       const error = catchError(() =>
-        Book.create({ title: "The Hobbit", authors: [""], isbn: "978-0-261-10221-7" }),
+        Book.create({ title: "The Hobbit", authors: [""], isbn: "978-0-261-10221-7" }, FIRST_UUID),
       );
 
       expect(error).toBeInstanceOf(EmptyAuthorError);
@@ -99,7 +122,7 @@ describe("Book", () => {
 
     it("propagates ISBN errors so consumers can catch them via DomainError", () => {
       const error = catchError(() =>
-        Book.create({ title: "The Hobbit", authors: ["J.R.R. Tolkien"], isbn: "" }),
+        Book.create({ title: "The Hobbit", authors: ["J.R.R. Tolkien"], isbn: "" }, FIRST_UUID),
       );
 
       expect(error).toBeInstanceOf(EmptyISBNError);
@@ -108,7 +131,10 @@ describe("Book", () => {
 
     it("propagates invalid ISBN length with context", () => {
       const error = catchError(() =>
-        Book.create({ title: "The Hobbit", authors: ["J.R.R. Tolkien"], isbn: "12345" }),
+        Book.create(
+          { title: "The Hobbit", authors: ["J.R.R. Tolkien"], isbn: "12345" },
+          FIRST_UUID,
+        ),
       );
 
       expect(error).toBeInstanceOf(InvalidISBNLengthError);
@@ -116,19 +142,22 @@ describe("Book", () => {
     });
 
     it("defaults status to TO_READ when not provided", () => {
-      const book = Book.create(validProps);
+      const book = Book.create(validProps, FIRST_UUID);
 
       expect(book.status.value).toBe("TO_READ");
     });
 
     it("creates a book with status, rating, observation and language", () => {
-      const book = Book.create({
-        ...validProps,
-        status: "READING",
-        rating: 4,
-        observation: "Gostei mas achei raso",
-        language: "pt",
-      });
+      const book = Book.create(
+        {
+          ...validProps,
+          status: "READING",
+          rating: 4,
+          observation: "Gostei mas achei raso",
+          language: "pt",
+        },
+        FIRST_UUID,
+      );
 
       expect(book.status.value).toBe("READING");
       expect(book.rating?.value).toBe(4);
@@ -137,7 +166,7 @@ describe("Book", () => {
     });
 
     it("leaves rating, observation and language undefined when not provided", () => {
-      const book = Book.create(validProps);
+      const book = Book.create(validProps, FIRST_UUID);
 
       expect(book.rating).toBeUndefined();
       expect(book.observation).toBeUndefined();
@@ -145,7 +174,7 @@ describe("Book", () => {
     });
 
     it("propagates InvalidReadingStatusError with context", () => {
-      const error = catchError(() => Book.create({ ...validProps, status: "PAUSED" }));
+      const error = catchError(() => Book.create({ ...validProps, status: "PAUSED" }, FIRST_UUID));
 
       expect(error).toBeInstanceOf(InvalidReadingStatusError);
       expect((error as InvalidReadingStatusError).code).toBe("READING_STATUS.INVALID");
@@ -153,7 +182,7 @@ describe("Book", () => {
     });
 
     it("propagates InvalidRatingError with context", () => {
-      const error = catchError(() => Book.create({ ...validProps, rating: 7 }));
+      const error = catchError(() => Book.create({ ...validProps, rating: 7 }, FIRST_UUID));
 
       expect(error).toBeInstanceOf(InvalidRatingError);
       expect((error as InvalidRatingError).code).toBe("RATING.INVALID");
@@ -161,7 +190,7 @@ describe("Book", () => {
     });
 
     it("propagates InvalidLanguageError with context", () => {
-      const error = catchError(() => Book.create({ ...validProps, language: "fr" }));
+      const error = catchError(() => Book.create({ ...validProps, language: "fr" }, FIRST_UUID));
 
       expect(error).toBeInstanceOf(InvalidLanguageError);
       expect((error as InvalidLanguageError).code).toBe("LANGUAGE.INVALID");
@@ -171,16 +200,16 @@ describe("Book", () => {
 
   describe("restore", () => {
     const validRestoreProps = {
-      id: "fixed-id-1234",
+      id: Uuid.create(FIRST_UUID),
       title: Title.create("The Hobbit"),
       authors: [Author.create("J.R.R. Tolkien")],
       isbn: ISBN.create("978-0-261-10221-7"),
     };
 
-    it("restores a book with the provided id instead of generating a new UUID", () => {
+    it("restores a book with the provided id instead of generating a new one", () => {
       const book = Book.restore(validRestoreProps);
 
-      expect(book.id).toBe("fixed-id-1234");
+      expect(book.id.value).toBe(FIRST_UUID);
       expect(book.title.value).toBe("The Hobbit");
       expect(book.authors).toHaveLength(1);
       expect(book.authors[0].value).toBe("J.R.R. Tolkien");
@@ -206,12 +235,15 @@ describe("Book", () => {
     });
 
     it("a restored book is equal to a created book when they share the same id", () => {
-      const created = Book.create({
-        title: "The Hobbit",
-        authors: ["J.R.R. Tolkien"],
-        isbn: "978-0-261-10221-7",
-      });
-      const restored = Book.restore({ ...validRestoreProps, id: created.id });
+      const created = Book.create(
+        {
+          title: "The Hobbit",
+          authors: ["J.R.R. Tolkien"],
+          isbn: "978-0-261-10221-7",
+        },
+        FIRST_UUID,
+      );
+      const restored = Book.restore({ ...validRestoreProps });
 
       expect(restored.equals(created)).toBe(true);
     });

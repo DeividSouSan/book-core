@@ -4,12 +4,12 @@ import { ISBN } from "../value-objects/isbn.js";
 import { ReadingStatus } from "../value-objects/reading-status.js";
 import { Rating } from "../value-objects/rating.js";
 import { Language } from "../value-objects/language.js";
+import { Uuid } from "../value-objects/uuid.js";
 import { TO_READ_STATUS } from "../value-objects/reading-status.constants.js";
-import { randomUUID } from "node:crypto";
 
 export class Book {
   private constructor(
-    public readonly id: string,
+    public readonly id: Uuid,
     public readonly title: Title,
     public readonly authors: readonly Author[],
     public readonly isbn: ISBN,
@@ -19,15 +19,21 @@ export class Book {
     public readonly language: Language | undefined,
   ) {}
 
-  static create(props: {
-    title: string;
-    authors: string[];
-    isbn: string;
-    status?: string;
-    rating?: number;
-    observation?: string;
-    language?: string;
-  }): Book {
+  // The caller generates the id and injects it: the domain never touches a
+  // runtime random API (node:crypto, WebCrypto), staying framework-independent.
+  // Uuid.create validates the injected value, so an invalid id never exists.
+  static create(
+    props: {
+      title: string;
+      authors: string[];
+      isbn: string;
+      status?: string;
+      rating?: number;
+      observation?: string;
+      language?: string;
+    },
+    id: string,
+  ): Book {
     // Empty authors list is a valid catalogue state ("author not yet known"):
     // each listed author is validated individually, but "unknown author" is a
     // legitimate state of catalogue data — requiring ≥1 author would push the
@@ -42,7 +48,7 @@ export class Book {
     const status = ReadingStatus.create(props.status ?? TO_READ_STATUS);
 
     return new Book(
-      randomUUID(),
+      Uuid.create(id),
       Title.create(props.title),
       authors,
       ISBN.create(props.isbn),
@@ -59,7 +65,7 @@ export class Book {
   // created. Absent status restores to TO_READ so that data persisted before
   // the status field existed remains restorable.
   static restore(props: {
-    id: string;
+    id: Uuid;
     title: Title;
     authors: Author[];
     isbn: ISBN;
@@ -81,6 +87,6 @@ export class Book {
   }
 
   equals(other: Book): boolean {
-    return this.id === other.id;
+    return this.id.equals(other.id);
   }
 }

@@ -6,6 +6,7 @@ import { Book as BookEntity } from "../../core/domain/entities/book.js";
 import { Title } from "../../core/domain/value-objects/title.js";
 import { Author } from "../../core/domain/value-objects/author.js";
 import { ISBN as ISBNValue } from "../../core/domain/value-objects/isbn.js";
+import { Uuid } from "../../core/domain/value-objects/uuid.js";
 import { ReadingStatus } from "../../core/domain/value-objects/reading-status.js";
 import { Rating } from "../../core/domain/value-objects/rating.js";
 import { Language } from "../../core/domain/value-objects/language.js";
@@ -35,7 +36,7 @@ interface StoredBook {
 
 function serializeBook(book: Book): StoredBook {
   return {
-    id: book.id,
+    id: book.id.value,
     title: book.title.value,
     authors: book.authors.map((author) => author.value),
     isbn: book.isbn.value,
@@ -48,7 +49,9 @@ function serializeBook(book: Book): StoredBook {
 
 function deserializeBook(stored: StoredBook): Book {
   return BookEntity.restore({
-    id: stored.id,
+    // A stored id that is not a valid UUID fails here and surfaces as
+    // StorageCorruptedError — corrupted data, not a silently dropped book.
+    id: Uuid.create(stored.id),
     title: Title.create(stored.title),
     authors: stored.authors.map((name) => Author.create(name)),
     isbn: ISBNValue.create(stored.isbn),
@@ -81,7 +84,7 @@ export class BookRepositoryLocalStorage implements BookRepository {
 
   async save(book: Book): Promise<void> {
     const books = this.readBooks();
-    const index = books.findIndex((existing) => existing.id === book.id);
+    const index = books.findIndex((existing) => existing.id.value === book.id.value);
 
     if (index >= 0) {
       books[index] = book;
@@ -93,7 +96,7 @@ export class BookRepositoryLocalStorage implements BookRepository {
   }
 
   async findById(id: string): Promise<Book | undefined> {
-    return this.readBooks().find((book) => book.id === id);
+    return this.readBooks().find((book) => book.id.value === id);
   }
 
   async getById(id: string): Promise<Book> {
@@ -116,7 +119,7 @@ export class BookRepositoryLocalStorage implements BookRepository {
 
   async delete(id: string): Promise<void> {
     const books = this.readBooks();
-    const remaining = books.filter((book) => book.id !== id);
+    const remaining = books.filter((book) => book.id.value !== id);
 
     if (remaining.length === books.length) {
       throw new BookNotFoundError(id);

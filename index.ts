@@ -10,6 +10,7 @@ export type { ISBNFormat } from "./core/domain/value-objects/isbn.js";
 export { Title } from "./core/domain/value-objects/title.js";
 export { Author } from "./core/domain/value-objects/author.js";
 export { Language } from "./core/domain/value-objects/language.js";
+export { Uuid } from "./core/domain/value-objects/uuid.js";
 export { ReadingStatus } from "./core/domain/value-objects/reading-status.js";
 export { Rating } from "./core/domain/value-objects/rating.js";
 
@@ -23,6 +24,7 @@ export type { TitleSortKeyStrategy } from "./core/domain/value-objects/sort-key.
 // Domain — constants (useful for UIs: ranges, supported values)
 export * from "./core/domain/value-objects/isbn.constants.js";
 export * from "./core/domain/value-objects/language.constants.js";
+export * from "./core/domain/value-objects/uuid.constants.js";
 export * from "./core/domain/value-objects/rating.constants.js";
 export * from "./core/domain/value-objects/reading-status.constants.js";
 export * from "./core/domain/value-objects/articles.constants.js";
@@ -37,6 +39,7 @@ export { InvalidISBNChecksumError } from "./core/domain/errors/invalid-isbn-chec
 export { EmptyTitleError } from "./core/domain/errors/empty-title.error.js";
 export { EmptyAuthorError } from "./core/domain/errors/empty-author.error.js";
 export { InvalidLanguageError } from "./core/domain/errors/invalid-language.error.js";
+export { InvalidUuidError } from "./core/domain/errors/invalid-uuid.error.js";
 export { InvalidReadingStatusError } from "./core/domain/errors/invalid-reading-status.error.js";
 export { InvalidRatingError } from "./core/domain/errors/invalid-rating.error.js";
 

@@ -6,6 +6,7 @@ import { Book } from "../../../../core/domain/entities/book";
 import { Title } from "../../../../core/domain/value-objects/title";
 import { Author } from "../../../../core/domain/value-objects/author";
 import { ISBN } from "../../../../core/domain/value-objects/isbn";
+import { Uuid } from "../../../../core/domain/value-objects/uuid";
 import { ReadingStatus } from "../../../../core/domain/value-objects/reading-status";
 import { Rating } from "../../../../core/domain/value-objects/rating";
 import { Language } from "../../../../core/domain/value-objects/language";
@@ -34,7 +35,7 @@ function createBook(props?: {
   language?: string;
 }): Book {
   return Book.restore({
-    id: props?.id ?? "fixed-id",
+    id: Uuid.create(props?.id ?? "550e8400-e29b-41d4-a716-446655440000"),
     title: Title.create(props?.title ?? "The Hobbit"),
     authors: [Author.create("J.R.R. Tolkien")],
     isbn: ISBN.create("978-0-261-10221-7"),
@@ -51,7 +52,7 @@ describe("BookRepositoryLocalStorage", () => {
       const storage = new FakeStorage();
       const repository = new BookRepositoryLocalStorage(storage);
       const book = createBook({
-        id: "fixed-id-1",
+        id: "11111111-1111-4111-8111-111111111111",
         status: "READ",
         rating: 5,
         observation: "Masterpiece",
@@ -60,10 +61,10 @@ describe("BookRepositoryLocalStorage", () => {
 
       await repository.save(book);
 
-      const found = await repository.findById("fixed-id-1");
+      const found = await repository.findById("11111111-1111-4111-8111-111111111111");
 
       expect(found).toBeDefined();
-      expect(found?.id).toBe("fixed-id-1");
+      expect(found?.id.value).toBe("11111111-1111-4111-8111-111111111111");
       expect(found?.title.value).toBe("The Hobbit");
       expect(found?.authors[0].value).toBe("J.R.R. Tolkien");
       expect(found?.isbn.value).toBe("9780261102217");
@@ -85,10 +86,14 @@ describe("BookRepositoryLocalStorage", () => {
       const storage = new FakeStorage();
       const repository = new BookRepositoryLocalStorage(storage);
 
-      await repository.save(createBook({ id: "fixed-id-2", title: "First Title" }));
-      await repository.save(createBook({ id: "fixed-id-2", title: "Second Title" }));
+      await repository.save(
+        createBook({ id: "22222222-2222-4222-8222-222222222222", title: "First Title" }),
+      );
+      await repository.save(
+        createBook({ id: "22222222-2222-4222-8222-222222222222", title: "Second Title" }),
+      );
 
-      const found = await repository.findById("fixed-id-2");
+      const found = await repository.findById("22222222-2222-4222-8222-222222222222");
 
       expect(found?.title.value).toBe("Second Title");
     });
@@ -97,11 +102,11 @@ describe("BookRepositoryLocalStorage", () => {
   describe("getById", () => {
     it("returns the book when it exists", async () => {
       const repository = new BookRepositoryLocalStorage(new FakeStorage());
-      await repository.save(createBook({ id: "fixed-id-3" }));
+      await repository.save(createBook({ id: "33333333-3333-4333-8333-333333333333" }));
 
-      const found = await repository.getById("fixed-id-3");
+      const found = await repository.getById("33333333-3333-4333-8333-333333333333");
 
-      expect(found.id).toBe("fixed-id-3");
+      expect(found.id.value).toBe("33333333-3333-4333-8333-333333333333");
     });
 
     it("throws BookNotFoundError when book does not exist", async () => {
@@ -114,11 +119,11 @@ describe("BookRepositoryLocalStorage", () => {
   describe("findByIsbn", () => {
     it("finds a book by its ISBN", async () => {
       const repository = new BookRepositoryLocalStorage(new FakeStorage());
-      await repository.save(createBook({ id: "fixed-id-4" }));
+      await repository.save(createBook({ id: "44444444-4444-4444-8444-444444444444" }));
 
       const found = await repository.findByIsbn(ISBN.create("9780261102217"));
 
-      expect(found?.id).toBe("fixed-id-4");
+      expect(found?.id.value).toBe("44444444-4444-4444-8444-444444444444");
     });
 
     it("returns undefined when ISBN is not found", async () => {
@@ -141,8 +146,12 @@ describe("BookRepositoryLocalStorage", () => {
 
     it("returns all saved books", async () => {
       const repository = new BookRepositoryLocalStorage(new FakeStorage());
-      await repository.save(createBook({ id: "fixed-id-5", title: "Book One" }));
-      await repository.save(createBook({ id: "fixed-id-6", title: "Book Two" }));
+      await repository.save(
+        createBook({ id: "55555555-5555-4555-8555-555555555555", title: "Book One" }),
+      );
+      await repository.save(
+        createBook({ id: "66666666-6666-4666-8666-666666666666", title: "Book Two" }),
+      );
 
       const all = await repository.findAll();
 
@@ -156,7 +165,7 @@ describe("BookRepositoryLocalStorage", () => {
         DEFAULT_STORAGE_KEY,
         JSON.stringify([
           {
-            id: "legacy-id",
+            id: "88888888-8888-4888-8888-888888888888",
             title: "The Hobbit",
             authors: ["J.R.R. Tolkien"],
             isbn: "9780261102217",
@@ -164,7 +173,7 @@ describe("BookRepositoryLocalStorage", () => {
         ]),
       );
 
-      const found = await repository.findById("legacy-id");
+      const found = await repository.findById("88888888-8888-4888-8888-888888888888");
 
       expect(found?.status.value).toBe("TO_READ");
       expect(found?.rating).toBeUndefined();
@@ -176,11 +185,11 @@ describe("BookRepositoryLocalStorage", () => {
   describe("delete", () => {
     it("deletes a book by id", async () => {
       const repository = new BookRepositoryLocalStorage(new FakeStorage());
-      await repository.save(createBook({ id: "fixed-id-7" }));
+      await repository.save(createBook({ id: "77777777-7777-4777-8777-777777777777" }));
 
-      await repository.delete("fixed-id-7");
+      await repository.delete("77777777-7777-4777-8777-777777777777");
 
-      expect(await repository.findById("fixed-id-7")).toBeUndefined();
+      expect(await repository.findById("77777777-7777-4777-8777-777777777777")).toBeUndefined();
     });
 
     it("throws BookNotFoundError when book does not exist", async () => {
@@ -203,7 +212,7 @@ describe("BookRepositoryLocalStorage", () => {
       expect((error as StorageCorruptedError).key).toBe(DEFAULT_STORAGE_KEY);
     });
 
-    it("throws StorageCorruptedError when a stored value fails domain validation", async () => {
+    it("throws StorageCorruptedError when a stored id is not a valid UUID", async () => {
       const storage = new FakeStorage();
       const repository = new BookRepositoryLocalStorage(storage);
       storage.setItem(
@@ -214,7 +223,7 @@ describe("BookRepositoryLocalStorage", () => {
             title: "The Hobbit",
             authors: [],
             isbn: "9780261102217",
-            status: "PAUSED",
+            status: "TO_READ",
           },
         ]),
       );
