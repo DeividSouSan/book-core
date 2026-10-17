@@ -1,5 +1,5 @@
-// Artigos iniciais usados pela sugestão de ordenação de título.
-// Quem consumir o núcleo pode estender esta lista ou fornecer sua própria estratégia.
+// Initial articles used by the title sort-key suggestion.
+// Consumers of the core can extend this list or provide their own strategy.
 
 export const ENGLISH_TITLE_ARTICLES = ["The", "A", "An"];
 

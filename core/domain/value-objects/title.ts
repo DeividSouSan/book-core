@@ -16,10 +16,10 @@ export class Title {
   }
 
   /**
-   * Título normalizado para ordenação de catálogo.
+   * Title normalized for catalogue sorting.
    *
-   * Por padrão ignora artigos iniciais (ex.: "The Starless Sea" → "Starless Sea").
-   * O consumidor pode injetar outra estratégia se a sugestão do núcleo não atender.
+   * By default ignores leading articles (ex.: "The Starless Sea" → "Starless Sea").
+   * The consumer can inject another strategy if the core's suggestion does not fit.
    */
   sortKey(strategy: TitleSortKeyStrategy = defaultTitleSortKey): string {
     return strategy(this.value);
