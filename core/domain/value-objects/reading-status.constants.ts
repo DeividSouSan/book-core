@@ -1,0 +1,10 @@
+export const TO_READ_STATUS = "TO_READ";
+export const READING_STATUS = "READING";
+export const READ_STATUS = "READ";
+export const DROPPED_STATUS = "DROPPED";
+export const SUPPORTED_READING_STATUSES = [
+  TO_READ_STATUS,
+  READING_STATUS,
+  READ_STATUS,
+  DROPPED_STATUS,
+];
