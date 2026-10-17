@@ -5,6 +5,9 @@ import { EmptyAuthorError } from "../../../core/domain/errors/empty-author.error
 import { EmptyISBNError } from "../../../core/domain/errors/empty-isbn.error";
 import { InvalidISBNLengthError } from "../../../core/domain/errors/invalid-isbn-length.error";
 import { Book } from "../../../core/domain/entities/book";
+import { Title } from "../../../core/domain/value-objects/title";
+import { Author } from "../../../core/domain/value-objects/author";
+import { ISBN } from "../../../core/domain/value-objects/isbn";
 
 function catchError(action: () => unknown): unknown {
   try {
@@ -104,6 +107,54 @@ describe("Book", () => {
 
       expect(error).toBeInstanceOf(InvalidISBNLengthError);
       expect((error as InvalidISBNLengthError).actualLength).toBe(5);
+    });
+  });
+
+  describe("restore", () => {
+    const validRestoreProps = {
+      id: "fixed-id-1234",
+      title: Title.create("The Hobbit"),
+      authors: [Author.create("J.R.R. Tolkien")],
+      isbn: ISBN.create("978-0-261-10221-7"),
+    };
+
+    it("restores a book with the provided id instead of generating a new UUID", () => {
+      const book = Book.restore(validRestoreProps);
+
+      expect(book.id).toBe("fixed-id-1234");
+      expect(book.title.value).toBe("The Hobbit");
+      expect(book.authors).toHaveLength(1);
+      expect(book.authors[0].value).toBe("J.R.R. Tolkien");
+      expect(book.isbn.value).toBe("9780261102217");
+    });
+
+    it("preserves title, authors and isbn exactly as provided", () => {
+      const book = Book.restore(validRestoreProps);
+
+      expect(book.title).toBe(validRestoreProps.title);
+      expect(book.authors).toEqual(validRestoreProps.authors);
+      expect(book.isbn).toBe(validRestoreProps.isbn);
+    });
+
+    it("two restored books with the same id are equal even with different data", () => {
+      const first = Book.restore(validRestoreProps);
+      const second = Book.restore({
+        ...validRestoreProps,
+        title: Title.create("Completely Different Title"),
+      });
+
+      expect(first.equals(second)).toBe(true);
+    });
+
+    it("a restored book is equal to a created book when they share the same id", () => {
+      const created = Book.create({
+        title: "The Hobbit",
+        authors: ["J.R.R. Tolkien"],
+        isbn: "978-0-261-10221-7",
+      });
+      const restored = Book.restore({ ...validRestoreProps, id: created.id });
+
+      expect(restored.equals(created)).toBe(true);
     });
   });
 });

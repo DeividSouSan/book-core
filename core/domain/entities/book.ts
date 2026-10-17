@@ -22,6 +22,14 @@ export class Book {
     return new Book(randomUUID(), Title.create(props.title), authors, ISBN.create(props.isbn));
   }
 
+  // Reconstitution factory: rebuilds a Book from already-validated domain
+  // objects (e.g. loaded from a repository). It does not generate a new id nor
+  // re-validate — the data is trusted to have been validated when originally
+  // created.
+  static restore(props: { id: string; title: Title; authors: Author[]; isbn: ISBN }): Book {
+    return new Book(props.id, props.title, props.authors, props.isbn);
+  }
+
   equals(other: Book): boolean {
     return this.id === other.id;
   }
