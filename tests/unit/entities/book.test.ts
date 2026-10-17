@@ -4,10 +4,16 @@ import { EmptyTitleError } from "../../../core/domain/errors/empty-title.error";
 import { EmptyAuthorError } from "../../../core/domain/errors/empty-author.error";
 import { EmptyISBNError } from "../../../core/domain/errors/empty-isbn.error";
 import { InvalidISBNLengthError } from "../../../core/domain/errors/invalid-isbn-length.error";
+import { InvalidReadingStatusError } from "../../../core/domain/errors/invalid-reading-status.error";
+import { InvalidRatingError } from "../../../core/domain/errors/invalid-rating.error";
+import { InvalidLanguageError } from "../../../core/domain/errors/invalid-language.error";
 import { Book } from "../../../core/domain/entities/book";
 import { Title } from "../../../core/domain/value-objects/title";
 import { Author } from "../../../core/domain/value-objects/author";
 import { ISBN } from "../../../core/domain/value-objects/isbn";
+import { ReadingStatus } from "../../../core/domain/value-objects/reading-status";
+import { Rating } from "../../../core/domain/value-objects/rating";
+import { Language } from "../../../core/domain/value-objects/language";
 
 function catchError(action: () => unknown): unknown {
   try {
@@ -108,6 +114,59 @@ describe("Book", () => {
       expect(error).toBeInstanceOf(InvalidISBNLengthError);
       expect((error as InvalidISBNLengthError).actualLength).toBe(5);
     });
+
+    it("defaults status to TO_READ when not provided", () => {
+      const book = Book.create(validProps);
+
+      expect(book.status.value).toBe("TO_READ");
+    });
+
+    it("creates a book with status, rating, observation and language", () => {
+      const book = Book.create({
+        ...validProps,
+        status: "READING",
+        rating: 4,
+        observation: "Gostei mas achei raso",
+        language: "pt",
+      });
+
+      expect(book.status.value).toBe("READING");
+      expect(book.rating?.value).toBe(4);
+      expect(book.observation).toBe("Gostei mas achei raso");
+      expect(book.language?.value).toBe("pt");
+    });
+
+    it("leaves rating, observation and language undefined when not provided", () => {
+      const book = Book.create(validProps);
+
+      expect(book.rating).toBeUndefined();
+      expect(book.observation).toBeUndefined();
+      expect(book.language).toBeUndefined();
+    });
+
+    it("propagates InvalidReadingStatusError with context", () => {
+      const error = catchError(() => Book.create({ ...validProps, status: "PAUSED" }));
+
+      expect(error).toBeInstanceOf(InvalidReadingStatusError);
+      expect((error as InvalidReadingStatusError).code).toBe("READING_STATUS.INVALID");
+      expect((error as InvalidReadingStatusError).receivedValue).toBe("PAUSED");
+    });
+
+    it("propagates InvalidRatingError with context", () => {
+      const error = catchError(() => Book.create({ ...validProps, rating: 7 }));
+
+      expect(error).toBeInstanceOf(InvalidRatingError);
+      expect((error as InvalidRatingError).code).toBe("RATING.INVALID");
+      expect((error as InvalidRatingError).receivedValue).toBe(7);
+    });
+
+    it("propagates InvalidLanguageError with context", () => {
+      const error = catchError(() => Book.create({ ...validProps, language: "fr" }));
+
+      expect(error).toBeInstanceOf(InvalidLanguageError);
+      expect((error as InvalidLanguageError).code).toBe("LANGUAGE.INVALID");
+      expect((error as InvalidLanguageError).receivedValue).toBe("fr");
+    });
   });
 
   describe("restore", () => {
@@ -155,6 +214,30 @@ describe("Book", () => {
       const restored = Book.restore({ ...validRestoreProps, id: created.id });
 
       expect(restored.equals(created)).toBe(true);
+    });
+
+    it("restores status, rating, observation and language exactly as provided", () => {
+      const book = Book.restore({
+        ...validRestoreProps,
+        status: ReadingStatus.create("READ"),
+        rating: Rating.create(5),
+        observation: "Masterpiece",
+        language: Language.create("en"),
+      });
+
+      expect(book.status.value).toBe("READ");
+      expect(book.rating?.value).toBe(5);
+      expect(book.observation).toBe("Masterpiece");
+      expect(book.language?.value).toBe("en");
+    });
+
+    it("keeps legacy persisted data restorable — status defaults to TO_READ when absent", () => {
+      const book = Book.restore(validRestoreProps);
+
+      expect(book.status.value).toBe("TO_READ");
+      expect(book.rating).toBeUndefined();
+      expect(book.observation).toBeUndefined();
+      expect(book.language).toBeUndefined();
     });
   });
 });

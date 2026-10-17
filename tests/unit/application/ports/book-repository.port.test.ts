@@ -1,19 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { BookNotFoundError } from "../../../../core/domain/errors/book-not-found.error";
-import type { Book } from "../../../../core/domain/entities/book";
+import { Book } from "../../../../core/domain/entities/book";
 import { Title } from "../../../../core/domain/value-objects/title";
 import { ISBN } from "../../../../core/domain/value-objects/isbn";
 import type { BookRepository } from "../../../../core/application/ports/book-repository.port";
 
-const mockBook: Book = {
+const mockBook = Book.restore({
   id: "mock-id",
   title: Title.create("Mock Title"),
   authors: [],
   isbn: ISBN.create("9780261102217"),
-  equals: () => true,
-} as Book;
+});
 
-// Mock mínimo para validar o contrato da porta sem depender de adaptador concreto.
+// Minimal mock to validate the port contract without depending on a concrete adapter.
 const mockBookRepository: BookRepository = {
   save: async () => {},
   findById: async () => undefined,
