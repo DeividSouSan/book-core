@@ -1,10 +1,10 @@
-import { Author } from "../value-objects/author";
-import { Title } from "../value-objects/title";
-import { ISBN } from "../value-objects/isbn";
-import { ReadingStatus } from "../value-objects/reading-status";
-import { Rating } from "../value-objects/rating";
-import { Language } from "../value-objects/language";
-import { TO_READ_STATUS } from "../value-objects/reading-status.constants";
+import { Author } from "../value-objects/author.js";
+import { Title } from "../value-objects/title.js";
+import { ISBN } from "../value-objects/isbn.js";
+import { ReadingStatus } from "../value-objects/reading-status.js";
+import { Rating } from "../value-objects/rating.js";
+import { Language } from "../value-objects/language.js";
+import { TO_READ_STATUS } from "../value-objects/reading-status.constants.js";
 import { randomUUID } from "node:crypto";
 
 export class Book {

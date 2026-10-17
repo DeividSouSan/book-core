@@ -1,7 +1,7 @@
-import type { Book } from "../../core/domain/entities/book";
-import type { ISBN } from "../../core/domain/value-objects/isbn";
-import { BookRepository } from "../../core/application/ports/book-repository.port";
-import { BookNotFoundError } from "../../core/domain/errors/book-not-found.error";
+import type { Book } from "../../core/domain/entities/book.js";
+import type { ISBN } from "../../core/domain/value-objects/isbn.js";
+import { BookRepository } from "../../core/application/ports/book-repository.port.js";
+import { BookNotFoundError } from "../../core/domain/errors/book-not-found.error.js";
 
 export class BookRepositoryMemory implements BookRepository {
   private readonly books = new Map<string, Book>();

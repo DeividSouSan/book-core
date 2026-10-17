@@ -2,47 +2,50 @@
 //   import { Book, BookRepositoryLocalStorage } from "book-core";
 
 // Domain — entity
-export { Book } from "./core/domain/entities/book";
+export { Book } from "./core/domain/entities/book.js";
 
 // Domain — value objects
-export { ISBN } from "./core/domain/value-objects/isbn";
-export type { ISBNFormat } from "./core/domain/value-objects/isbn";
-export { Title } from "./core/domain/value-objects/title";
-export { Author } from "./core/domain/value-objects/author";
-export { Language } from "./core/domain/value-objects/language";
-export { ReadingStatus } from "./core/domain/value-objects/reading-status";
-export { Rating } from "./core/domain/value-objects/rating";
+export { ISBN } from "./core/domain/value-objects/isbn.js";
+export type { ISBNFormat } from "./core/domain/value-objects/isbn.js";
+export { Title } from "./core/domain/value-objects/title.js";
+export { Author } from "./core/domain/value-objects/author.js";
+export { Language } from "./core/domain/value-objects/language.js";
+export { ReadingStatus } from "./core/domain/value-objects/reading-status.js";
+export { Rating } from "./core/domain/value-objects/rating.js";
 
 // Domain — title sorting (replaceable suggestion)
-export { removeLeadingArticles, defaultTitleSortKey } from "./core/domain/value-objects/sort-key";
-export type { TitleSortKeyStrategy } from "./core/domain/value-objects/sort-key";
+export {
+  removeLeadingArticles,
+  defaultTitleSortKey,
+} from "./core/domain/value-objects/sort-key.js";
+export type { TitleSortKeyStrategy } from "./core/domain/value-objects/sort-key.js";
 
 // Domain — constants (useful for UIs: ranges, supported values)
-export * from "./core/domain/value-objects/isbn.constants";
-export * from "./core/domain/value-objects/language.constants";
-export * from "./core/domain/value-objects/rating.constants";
-export * from "./core/domain/value-objects/reading-status.constants";
-export * from "./core/domain/value-objects/articles.constants";
+export * from "./core/domain/value-objects/isbn.constants.js";
+export * from "./core/domain/value-objects/language.constants.js";
+export * from "./core/domain/value-objects/rating.constants.js";
+export * from "./core/domain/value-objects/reading-status.constants.js";
+export * from "./core/domain/value-objects/articles.constants.js";
 
 // Domain — errors (all extend DomainError and carry a machine-readable code)
-export { DomainError } from "./core/domain/errors/domain.error";
-export { BookNotFoundError } from "./core/domain/errors/book-not-found.error";
-export { EmptyISBNError } from "./core/domain/errors/empty-isbn.error";
-export { InvalidISBNLengthError } from "./core/domain/errors/invalid-isbn-length.error";
-export { InvalidISBNCharactersError } from "./core/domain/errors/invalid-isbn-characters.error";
-export { InvalidISBNChecksumError } from "./core/domain/errors/invalid-isbn-checksum.error";
-export { EmptyTitleError } from "./core/domain/errors/empty-title.error";
-export { EmptyAuthorError } from "./core/domain/errors/empty-author.error";
-export { InvalidLanguageError } from "./core/domain/errors/invalid-language.error";
-export { InvalidReadingStatusError } from "./core/domain/errors/invalid-reading-status.error";
-export { InvalidRatingError } from "./core/domain/errors/invalid-rating.error";
+export { DomainError } from "./core/domain/errors/domain.error.js";
+export { BookNotFoundError } from "./core/domain/errors/book-not-found.error.js";
+export { EmptyISBNError } from "./core/domain/errors/empty-isbn.error.js";
+export { InvalidISBNLengthError } from "./core/domain/errors/invalid-isbn-length.error.js";
+export { InvalidISBNCharactersError } from "./core/domain/errors/invalid-isbn-characters.error.js";
+export { InvalidISBNChecksumError } from "./core/domain/errors/invalid-isbn-checksum.error.js";
+export { EmptyTitleError } from "./core/domain/errors/empty-title.error.js";
+export { EmptyAuthorError } from "./core/domain/errors/empty-author.error.js";
+export { InvalidLanguageError } from "./core/domain/errors/invalid-language.error.js";
+export { InvalidReadingStatusError } from "./core/domain/errors/invalid-reading-status.error.js";
+export { InvalidRatingError } from "./core/domain/errors/invalid-rating.error.js";
 
 // Application — ports (interfaces for outbound adapters)
-export type { BookRepository } from "./core/application/ports/book-repository.port";
+export type { BookRepository } from "./core/application/ports/book-repository.port.js";
 
 // Adapters — outbound
-export { BookRepositoryMemory } from "./adapters/outbound/book-repository.memory";
-export { BookRepositoryLocalStorage } from "./adapters/outbound/book-repository.local-storage";
-export type { StorageLike } from "./adapters/outbound/book-repository.local-storage";
-export { DEFAULT_STORAGE_KEY } from "./adapters/outbound/book-repository.local-storage.constants";
-export { StorageCorruptedError } from "./adapters/outbound/storage-corrupted.error";
+export { BookRepositoryMemory } from "./adapters/outbound/book-repository.memory.js";
+export { BookRepositoryLocalStorage } from "./adapters/outbound/book-repository.local-storage.js";
+export type { StorageLike } from "./adapters/outbound/book-repository.local-storage.js";
+export { DEFAULT_STORAGE_KEY } from "./adapters/outbound/book-repository.local-storage.constants.js";
+export { StorageCorruptedError } from "./adapters/outbound/storage-corrupted.error.js";

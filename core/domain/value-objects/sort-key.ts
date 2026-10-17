@@ -1,4 +1,4 @@
-import { DEFAULT_TITLE_ARTICLES } from "./articles.constants";
+import { DEFAULT_TITLE_ARTICLES } from "./articles.constants.js";
 
 // Replaceable title sort-key strategy.
 // The core exposes a suggestion (defaultTitleSortKey), but the consumer can

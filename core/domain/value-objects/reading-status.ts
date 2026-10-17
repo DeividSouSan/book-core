@@ -1,5 +1,5 @@
-import { InvalidReadingStatusError } from "../errors/invalid-reading-status.error";
-import { SUPPORTED_READING_STATUSES } from "./reading-status.constants";
+import { InvalidReadingStatusError } from "../errors/invalid-reading-status.error.js";
+import { SUPPORTED_READING_STATUSES } from "./reading-status.constants.js";
 
 export class ReadingStatus {
   private constructor(public readonly value: string) {}

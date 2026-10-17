@@ -1,4 +1,4 @@
-import { DomainError } from "../../core/domain/errors/domain.error";
+import { DomainError } from "../../core/domain/errors/domain.error.js";
 
 // Thrown when the storage content cannot be read: invalid JSON or values that
 // fail domain validation. Fails loudly instead of silently dropping the user's

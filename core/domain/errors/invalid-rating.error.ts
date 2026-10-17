@@ -1,5 +1,5 @@
-import { DomainError } from "./domain.error";
-import { MAXIMUM_RATING, MINIMUM_RATING } from "../value-objects/rating.constants";
+import { DomainError } from "./domain.error.js";
+import { MAXIMUM_RATING, MINIMUM_RATING } from "../value-objects/rating.constants.js";
 
 export class InvalidRatingError extends DomainError {
   constructor(

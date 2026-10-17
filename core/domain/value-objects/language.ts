@@ -1,5 +1,5 @@
-import { InvalidLanguageError } from "../errors/invalid-language.error";
-import { SUPPORTED_LANGUAGE_CODES } from "./language.constants";
+import { InvalidLanguageError } from "../errors/invalid-language.error.js";
+import { SUPPORTED_LANGUAGE_CODES } from "./language.constants.js";
 
 export class Language {
   private constructor(public readonly value: string) {}

@@ -1,6 +1,6 @@
 // Type-only import: a value import would create a circular runtime dependency with isbn.ts.
-import type { ISBNFormat } from "../value-objects/isbn";
-import { DomainError } from "./domain.error";
+import type { ISBNFormat } from "../value-objects/isbn.js";
+import { DomainError } from "./domain.error.js";
 
 export class InvalidISBNChecksumError extends DomainError {
   constructor(

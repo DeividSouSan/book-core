@@ -1,5 +1,5 @@
-import type { Book } from "../../domain/entities/book";
-import type { ISBN } from "../../domain/value-objects/isbn";
+import type { Book } from "../../domain/entities/book.js";
+import type { ISBN } from "../../domain/value-objects/isbn.js";
 
 export interface BookRepository {
   save(book: Book): Promise<void>;

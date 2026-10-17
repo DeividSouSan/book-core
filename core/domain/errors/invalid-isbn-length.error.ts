@@ -1,5 +1,5 @@
-import { ISBN_10_LENGTH, ISBN_13_LENGTH } from "../value-objects/isbn.constants";
-import { DomainError } from "./domain.error";
+import { ISBN_10_LENGTH, ISBN_13_LENGTH } from "../value-objects/isbn.constants.js";
+import { DomainError } from "./domain.error.js";
 
 export class InvalidISBNLengthError extends DomainError {
   constructor(

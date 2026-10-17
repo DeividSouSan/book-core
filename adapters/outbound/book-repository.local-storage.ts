@@ -1,16 +1,16 @@
-import type { Book } from "../../core/domain/entities/book";
-import type { ISBN } from "../../core/domain/value-objects/isbn";
-import type { BookRepository } from "../../core/application/ports/book-repository.port";
-import { BookNotFoundError } from "../../core/domain/errors/book-not-found.error";
-import { Book as BookEntity } from "../../core/domain/entities/book";
-import { Title } from "../../core/domain/value-objects/title";
-import { Author } from "../../core/domain/value-objects/author";
-import { ISBN as ISBNValue } from "../../core/domain/value-objects/isbn";
-import { ReadingStatus } from "../../core/domain/value-objects/reading-status";
-import { Rating } from "../../core/domain/value-objects/rating";
-import { Language } from "../../core/domain/value-objects/language";
-import { DEFAULT_STORAGE_KEY } from "./book-repository.local-storage.constants";
-import { StorageCorruptedError } from "./storage-corrupted.error";
+import type { Book } from "../../core/domain/entities/book.js";
+import type { ISBN } from "../../core/domain/value-objects/isbn.js";
+import type { BookRepository } from "../../core/application/ports/book-repository.port.js";
+import { BookNotFoundError } from "../../core/domain/errors/book-not-found.error.js";
+import { Book as BookEntity } from "../../core/domain/entities/book.js";
+import { Title } from "../../core/domain/value-objects/title.js";
+import { Author } from "../../core/domain/value-objects/author.js";
+import { ISBN as ISBNValue } from "../../core/domain/value-objects/isbn.js";
+import { ReadingStatus } from "../../core/domain/value-objects/reading-status.js";
+import { Rating } from "../../core/domain/value-objects/rating.js";
+import { Language } from "../../core/domain/value-objects/language.js";
+import { DEFAULT_STORAGE_KEY } from "./book-repository.local-storage.constants.js";
+import { StorageCorruptedError } from "./storage-corrupted.error.js";
 
 // Minimal structural interface of the Web Storage API (getItem/setItem) so
 // the adapter works with the browser's localStorage, sessionStorage, or any

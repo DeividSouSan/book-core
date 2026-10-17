@@ -1,7 +1,7 @@
-import { EmptyISBNError } from "../errors/empty-isbn.error";
-import { InvalidISBNCharactersError } from "../errors/invalid-isbn-characters.error";
-import { InvalidISBNChecksumError } from "../errors/invalid-isbn-checksum.error";
-import { InvalidISBNLengthError } from "../errors/invalid-isbn-length.error";
+import { EmptyISBNError } from "../errors/empty-isbn.error.js";
+import { InvalidISBNCharactersError } from "../errors/invalid-isbn-characters.error.js";
+import { InvalidISBNChecksumError } from "../errors/invalid-isbn-checksum.error.js";
+import { InvalidISBNLengthError } from "../errors/invalid-isbn-length.error.js";
 import {
   ISBN_10_CHECK_DIGIT_INDEX,
   ISBN_10_CHECKSUM_MODULUS,
@@ -12,7 +12,7 @@ import {
   ISBN_13_EVEN_POSITION_WEIGHT,
   ISBN_13_LENGTH,
   ISBN_13_ODD_POSITION_WEIGHT,
-} from "./isbn.constants";
+} from "./isbn.constants.js";
 
 export type ISBNFormat = "isbn10" | "isbn13";
 

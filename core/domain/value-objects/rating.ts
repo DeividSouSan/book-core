@@ -1,5 +1,5 @@
-import { InvalidRatingError } from "../errors/invalid-rating.error";
-import { MAXIMUM_RATING, MINIMUM_RATING } from "./rating.constants";
+import { InvalidRatingError } from "../errors/invalid-rating.error.js";
+import { MAXIMUM_RATING, MINIMUM_RATING } from "./rating.constants.js";
 
 export class Rating {
   private constructor(public readonly value: number) {}

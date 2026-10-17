@@ -1,6 +1,6 @@
-import { EmptyTitleError } from "../errors/empty-title.error";
-import { defaultTitleSortKey } from "./sort-key";
-import type { TitleSortKeyStrategy } from "./sort-key";
+import { EmptyTitleError } from "../errors/empty-title.error.js";
+import { defaultTitleSortKey } from "./sort-key.js";
+import type { TitleSortKeyStrategy } from "./sort-key.js";
 
 export class Title {
   private constructor(public readonly value: string) {}

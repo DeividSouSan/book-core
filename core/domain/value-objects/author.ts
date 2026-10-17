@@ -1,4 +1,4 @@
-import { EmptyAuthorError } from "../errors/empty-author.error";
+import { EmptyAuthorError } from "../errors/empty-author.error.js";
 
 export class Author {
   private constructor(public readonly value: string) {}

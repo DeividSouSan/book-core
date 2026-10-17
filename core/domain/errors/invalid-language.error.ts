@@ -1,5 +1,5 @@
-import { DomainError } from "./domain.error";
-import { SUPPORTED_LANGUAGE_CODES } from "../value-objects/language.constants";
+import { DomainError } from "./domain.error.js";
+import { SUPPORTED_LANGUAGE_CODES } from "../value-objects/language.constants.js";
 
 export class InvalidLanguageError extends DomainError {
   constructor(
