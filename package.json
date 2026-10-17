@@ -32,6 +32,9 @@
   "author": "",
   "type": "module",
   "license": "ISC",
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
     "@commitlint/cli": "21.2.3",
     "@commitlint/config-conventional": "21.2.3",
