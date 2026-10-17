@@ -14,6 +14,13 @@ Escreva código, comentários e descrições de teste em inglês.
 - `core/domain` não importa libs externas nem módulos de `adapters/` — o domínio é independente de frameworks. Evite imports circulares: compartilhe tipos com `import type` e constantes em arquivos próprios.
 - Sufixos de arquivo indicam o papel: `.error.ts`, `.constants.ts`, `.test.ts`.
 
+## Filosofia do núcleo
+
+- O núcleo fornece comportamentos que encapsulam conhecimento especializado e reutilizável sobre livros, mas explicita convenções que não são universais e permite sua substituição quando apropriado.
+- Convenções comuns como padrão: o núcleo oferece comportamentos úteis sem exigir que cada consumidor os implemente.
+- Composição em vez de imposição: o consumidor pode utilizar apenas parte das funcionalidades sem precisar adotar todas as políticas do núcleo.
+- Extensibilidade: convenções particulares podem ser substituídas ou complementadas sem comprometer o modelo central.
+
 ## Comentários
 
 - Escreva comentários quando uma regra não for explícita, não for entendível pelo próprio código ou pelo contexto — e sempre quando for regra de nicho (ex.: só quem estudou o ISBN-13 sabe que posições ímpares pesam 1). O objetivo é que qualquer pessoa contribua sem ser especialista.
