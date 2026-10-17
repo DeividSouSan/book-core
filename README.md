@@ -2,6 +2,8 @@
 
 Núcleo de domínio de livros independente de frameworks, seguindo Arquitetura Hexagonal + DDD, pronto para ser consumido por adaptadores (API REST, CLI, repositório PostgreSQL, memória, etc.).
 
+> Guia em linguagem natural para agentes: [docs/book-core-guide.md](./docs/book-core-guide.md) — o que é a entidade Livro, campos obrigatórios/opcionais, regras de validação, repositório, erros e exemplos.
+
 ## Instalação (projeto local)
 
 Enquanto o pacote não está publicado no npm, consuma apontando para a pasta local:
@@ -98,6 +100,7 @@ book-core/
 ├── adapters/
 │   ├── inbound/         # Controladores REST, CLI, etc.
 │   └── outbound/        # Repositórios (PostgreSQL, memória), presenters
+├── docs/                # Guias em linguagem natural ([book-core-guide.md](./docs/book-core-guide.md))
 ├── dist/                # Saída compilada (gerada pelo build, não versionada)
 └── tests/               # Testes unitários e de integração
 ```
