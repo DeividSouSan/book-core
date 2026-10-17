@@ -15,6 +15,6 @@
     "declarationMap": true,
     "noEmit": true
   },
-  "include": ["core/**/*.ts", "adapters/**/*.ts", "tests/**/*.ts"],
+  "include": ["index.ts", "core/**/*.ts", "adapters/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
