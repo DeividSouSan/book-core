@@ -87,16 +87,7 @@ export class Book {
 
     // Cover is trimmed like Title/Author; an empty or whitespace-only cover
     // is rejected the same way other value objects reject blank input.
-    const cover =
-      props.cover !== undefined
-        ? (() => {
-            const trimmed = props.cover.trim();
-            if (trimmed.length === 0) {
-              throw new EmptyCoverError(props.cover);
-            }
-            return trimmed;
-          })()
-        : undefined;
+    const cover = normalizeCover(props.cover);
 
     return new Book(
       Uuid.create(id),
@@ -185,6 +176,10 @@ export class Book {
     });
   }
 
+  withCover(cover: string): Book {
+    return this.copyWith({ cover: normalizeCover(cover) });
+  }
+
   // Single place where a Book is rebuilt with replaced fields: listed fields
   // overwrite the current values, unlisted fields keep them (an explicit
   // `undefined` erases an optional field, e.g. withoutRating).
@@ -209,6 +204,20 @@ export class Book {
       [...(changes.genres ?? this.genres)],
     );
   }
+}
+
+// Shared cover rule for create and withCover: absence stays absent, otherwise
+// trim surrounding whitespace and reject blank input. Keeping it in one helper
+// preserves parity (same input yields the same code on both sides), per AGENTS.md.
+function normalizeCover(cover: string | undefined): string | undefined {
+  if (cover === undefined) {
+    return undefined;
+  }
+  const trimmed = cover.trim();
+  if (trimmed.length === 0) {
+    throw new EmptyCoverError(cover);
+  }
+  return trimmed;
 }
 
 // Rejects repeated genre identifiers (create and withGenre).
