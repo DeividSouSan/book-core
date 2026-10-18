@@ -248,6 +248,8 @@ Book.create(
     rating?: number;
     observation?: string;
     language?: string;
+    favorited?: boolean;
+    cover?: string;
     genres?: string[];
   },
   id: string, // UUID gerado pelo chamador
