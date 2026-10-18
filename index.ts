@@ -11,6 +11,7 @@ export { Title } from "./core/domain/value-objects/title.js";
 export { Author } from "./core/domain/value-objects/author.js";
 export { Language } from "./core/domain/value-objects/language.js";
 export { Uuid } from "./core/domain/value-objects/uuid.js";
+export { GenreId } from "./core/domain/value-objects/genre-id.js";
 export { ReadingStatus } from "./core/domain/value-objects/reading-status.js";
 export { Rating } from "./core/domain/value-objects/rating.js";
 
@@ -38,6 +39,8 @@ export { InvalidISBNCharactersError } from "./core/domain/errors/invalid-isbn-ch
 export { InvalidISBNChecksumError } from "./core/domain/errors/invalid-isbn-checksum.error.js";
 export { EmptyTitleError } from "./core/domain/errors/empty-title.error.js";
 export { EmptyAuthorError } from "./core/domain/errors/empty-author.error.js";
+export { EmptyGenreIdError } from "./core/domain/errors/empty-genre-id.error.js";
+export { DuplicateGenreIdError } from "./core/domain/errors/duplicate-genre-id.error.js";
 export { InvalidLanguageError } from "./core/domain/errors/invalid-language.error.js";
 export { InvalidUuidError } from "./core/domain/errors/invalid-uuid.error.js";
 export { InvalidReadingStatusError } from "./core/domain/errors/invalid-reading-status.error.js";
