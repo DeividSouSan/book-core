@@ -158,7 +158,7 @@ describe("BookRepositoryLocalStorage", () => {
       expect(all.map((book) => book.title.value)).toEqual(["Book One", "Book Two"]);
     });
 
-    it("restores a book persisted before the reading fields existed — status defaults to TO_READ", async () => {
+    it("throws STORAGE.CORRUPTED when a stored book has no status", async () => {
       const storage = new FakeStorage();
       const repository = new BookRepositoryLocalStorage(storage);
       storage.setItem(
@@ -173,12 +173,10 @@ describe("BookRepositoryLocalStorage", () => {
         ]),
       );
 
-      const found = await repository.findById("88888888-8888-4888-8888-888888888888");
+      const error = await repository.findAll().catch((e) => e);
 
-      expect(found?.status.value).toBe("TO_READ");
-      expect(found?.rating).toBeUndefined();
-      expect(found?.observation).toBeUndefined();
-      expect(found?.language).toBeUndefined();
+      expect(error).toBeInstanceOf(StorageCorruptedError);
+      expect((error as StorageCorruptedError).code).toBe("STORAGE.CORRUPTED");
     });
   });
 
@@ -203,7 +201,7 @@ describe("BookRepositoryLocalStorage", () => {
       expect(found?.genres.map((g) => g.value)).toEqual(["Fantasy", "Sci-Fi"]);
     });
 
-    it("loads legacy payloads without genres as an empty list", async () => {
+    it("throws STORAGE.CORRUPTED when a stored book has no genres", async () => {
       const storage = new FakeStorage();
       const repository = new BookRepositoryLocalStorage(storage);
       storage.setItem(
@@ -218,9 +216,10 @@ describe("BookRepositoryLocalStorage", () => {
         ]),
       );
 
-      const found = await repository.findById("88888888-8888-4888-8888-888888888888");
+      const error = await repository.findAll().catch((e) => e);
 
-      expect(found?.genres).toEqual([]);
+      expect(error).toBeInstanceOf(StorageCorruptedError);
+      expect((error as StorageCorruptedError).code).toBe("STORAGE.CORRUPTED");
     });
 
     it("throws STORAGE.CORRUPTED when genres is not an array", async () => {
@@ -283,25 +282,6 @@ describe("BookRepositoryLocalStorage", () => {
       await repository.save(book);
 
       const found = await repository.findById("11111111-1111-4111-8111-111111111111");
-
-      expect(found?.isbn).toBeUndefined();
-    });
-
-    it("loads legacy payloads without ISBN with isbn undefined", async () => {
-      const storage = new FakeStorage();
-      const repository = new BookRepositoryLocalStorage(storage);
-      storage.setItem(
-        DEFAULT_STORAGE_KEY,
-        JSON.stringify([
-          {
-            id: "88888888-8888-4888-8888-888888888888",
-            title: "The Hobbit",
-            authors: ["J.R.R. Tolkien"],
-          },
-        ]),
-      );
-
-      const found = await repository.findById("88888888-8888-4888-8888-888888888888");
 
       expect(found?.isbn).toBeUndefined();
     });
