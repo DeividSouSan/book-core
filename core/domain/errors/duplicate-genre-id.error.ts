@@ -4,7 +4,7 @@ import { DomainError } from "./domain.error.js";
 // A comparação é exata (case-sensitive): "Fantasy" e "fantasy" não são
 // tratados como duplicados.
 export class DuplicateGenreIdError extends DomainError {
-  constructor(public readonly duplicatedValue: string) {
-    super(`Duplicate genre id (received: "${duplicatedValue}").`, "GENRE_ID.DUPLICATED");
+  constructor(public readonly receivedValue: string) {
+    super(`Duplicate genre id (received: "${receivedValue}").`, "GENRE_ID.DUPLICATED");
   }
 }
