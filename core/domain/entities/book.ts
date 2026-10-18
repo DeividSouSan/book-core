@@ -117,7 +117,10 @@ export class Book {
     return new Book(
       props.id,
       props.title,
-      props.authors,
+      // Defensive copies: readonly is compile-time only, so the input arrays
+      // are copied to keep the book immune to later mutations of the caller's
+      // arrays (and vice versa) — mirroring create().
+      [...props.authors],
       props.isbn,
       props.status ?? ReadingStatus.create(TO_READ_STATUS),
       props.rating,
@@ -125,7 +128,7 @@ export class Book {
       props.language,
       props.favorited,
       props.cover,
-      props.genres ?? [],
+      [...(props.genres ?? [])],
     );
   }
 
