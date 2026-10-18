@@ -63,13 +63,7 @@ export class Book {
     // rejeita duplicatas por valor exato (case-sensitive) e guarda uma cópia
     // nova do array, imune a mutações posteriores do array de entrada.
     const genreIds = (props.genres ?? []).map((name) => GenreId.create(name));
-    const seen = new Set<string>();
-    for (const genre of genreIds) {
-      if (seen.has(genre.value)) {
-        throw new DuplicateGenreIdError(genre.value);
-      }
-      seen.add(genre.value);
-    }
+    ensureNoDuplicateGenreIds(genreIds);
 
     return new Book(
       Uuid.create(id),
@@ -123,5 +117,18 @@ export class Book {
 
   equals(other: Book): boolean {
     return this.id.equals(other.id);
+  }
+}
+
+// Rejeita identificadores de gênero repetidos em create.
+// A comparação é exata (case-sensitive): \"Fantasy\" e \"fantasy\" são ids
+// distintos e não lançam erro. O primeiro lançamento aponta o valor duplicado.
+function ensureNoDuplicateGenreIds(genreIds: readonly GenreId[]): void {
+  const seen = new Set<string>();
+  for (const genre of genreIds) {
+    if (seen.has(genre.value)) {
+      throw new DuplicateGenreIdError(genre.value);
+    }
+    seen.add(genre.value);
   }
 }
