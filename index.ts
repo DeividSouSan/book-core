@@ -41,6 +41,7 @@ export { EmptyTitleError } from "./core/domain/errors/empty-title.error.js";
 export { EmptyAuthorError } from "./core/domain/errors/empty-author.error.js";
 export { EmptyGenreIdError } from "./core/domain/errors/empty-genre-id.error.js";
 export { DuplicateGenreIdError } from "./core/domain/errors/duplicate-genre-id.error.js";
+export { EmptyCoverError } from "./core/domain/errors/empty-cover.error.js";
 export { InvalidLanguageError } from "./core/domain/errors/invalid-language.error.js";
 export { InvalidUuidError } from "./core/domain/errors/invalid-uuid.error.js";
 export { InvalidReadingStatusError } from "./core/domain/errors/invalid-reading-status.error.js";

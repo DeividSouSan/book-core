@@ -3,6 +3,7 @@ import { DomainError } from "../../../core/domain/errors/domain.error";
 import { EmptyTitleError } from "../../../core/domain/errors/empty-title.error";
 import { EmptyAuthorError } from "../../../core/domain/errors/empty-author.error";
 import { EmptyISBNError } from "../../../core/domain/errors/empty-isbn.error";
+import { EmptyCoverError } from "../../../core/domain/errors/empty-cover.error";
 import { EmptyGenreIdError } from "../../../core/domain/errors/empty-genre-id.error";
 import { DuplicateGenreIdError } from "../../../core/domain/errors/duplicate-genre-id.error";
 import { InvalidISBNLengthError } from "../../../core/domain/errors/invalid-isbn-length.error";
@@ -318,7 +319,15 @@ describe("Book", () => {
 
       expect(error).toBeInstanceOf(DuplicateGenreIdError);
       expect((error as DuplicateGenreIdError).code).toBe("GENRE_ID.DUPLICATED");
-      expect((error as DuplicateGenreIdError).duplicatedValue).toBe("Fantasy");
+      expect((error as DuplicateGenreIdError).receivedValue).toBe("Fantasy");
+    });
+
+    it("throws EmptyCoverError when cover is blank, with code and context", () => {
+      const error = catchError(() => Book.create({ ...validProps, cover: "   " }, FIRST_UUID));
+
+      expect(error).toBeInstanceOf(EmptyCoverError);
+      expect((error as EmptyCoverError).code).toBe("COVER.EMPTY");
+      expect((error as EmptyCoverError).receivedValue).toBe("   ");
     });
 
     it("does not treat 'Fantasy' and 'fantasy' as duplicates", () => {

@@ -8,6 +8,7 @@ import { Uuid } from "../value-objects/uuid.js";
 import { GenreId } from "../value-objects/genre-id.js";
 import { TO_READ_STATUS } from "../value-objects/reading-status.constants.js";
 import { DuplicateGenreIdError } from "../errors/duplicate-genre-id.error.js";
+import { EmptyCoverError } from "../errors/empty-cover.error.js";
 
 export class Book {
   private constructor(
@@ -65,6 +66,19 @@ export class Book {
     const genreIds = (props.genres ?? []).map((name) => GenreId.create(name));
     ensureNoDuplicateGenreIds(genreIds);
 
+    // Cover is trimmed like Title/Author; an empty or whitespace-only cover
+    // is rejected the same way other value objects reject blank input.
+    const cover =
+      props.cover !== undefined
+        ? (() => {
+            const trimmed = props.cover.trim();
+            if (trimmed.length === 0) {
+              throw new EmptyCoverError(props.cover);
+            }
+            return trimmed;
+          })()
+        : undefined;
+
     return new Book(
       Uuid.create(id),
       Title.create(props.title),
@@ -77,7 +91,7 @@ export class Book {
       props.observation,
       props.language !== undefined ? Language.create(props.language) : undefined,
       props.favorited,
-      props.cover !== undefined ? props.cover.trim() : undefined,
+      cover,
       [...genreIds],
     );
   }
