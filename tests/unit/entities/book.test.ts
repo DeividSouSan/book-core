@@ -173,6 +173,34 @@ describe("Book", () => {
       expect(book.language).toBeUndefined();
     });
 
+    it("defaults favorited to undefined when not provided", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      expect(book.favorited).toBeUndefined();
+    });
+
+    it("creates a book with favorited set to true", () => {
+      const book = Book.create({ ...validProps, favorited: true }, FIRST_UUID);
+
+      expect(book.favorited).toBe(true);
+    });
+
+    it("creates a book with favorited set to false", () => {
+      const book = Book.create({ ...validProps, favorited: false }, FIRST_UUID);
+
+      expect(book.favorited).toBe(false);
+    });
+
+    it("propagates favorited exactly as provided", () => {
+      const book = Book.create({ ...validProps, favorited: true }, SECOND_UUID);
+
+      expect(book.favorited).toBe(true);
+
+      const notFavorite = Book.create({ ...validProps, favorited: false }, FIRST_UUID);
+
+      expect(notFavorite.favorited).toBe(false);
+    });
+
     it("propagates InvalidReadingStatusError with context", () => {
       const error = catchError(() => Book.create({ ...validProps, status: "PAUSED" }, FIRST_UUID));
 
@@ -270,6 +298,23 @@ describe("Book", () => {
       expect(book.rating).toBeUndefined();
       expect(book.observation).toBeUndefined();
       expect(book.language).toBeUndefined();
+      expect(book.favorited).toBeUndefined();
+    });
+
+    it("restores favorited exactly as provided", () => {
+      const book = Book.restore({
+        ...validRestoreProps,
+        favorited: true,
+      });
+
+      expect(book.favorited).toBe(true);
+
+      const notFavorite = Book.restore({
+        ...validRestoreProps,
+        favorited: false,
+      });
+
+      expect(notFavorite.favorited).toBe(false);
     });
   });
 });

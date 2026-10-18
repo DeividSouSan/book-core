@@ -17,6 +17,9 @@ export class Book {
     public readonly rating: Rating | undefined,
     public readonly observation: string | undefined,
     public readonly language: Language | undefined,
+    // favorited is a plain boolean with no domain validation — a book is either
+    // marked as a favorite or it is not, and absence means "not favorited".
+    public readonly favorited: boolean | undefined,
   ) {}
 
   // The caller generates the id and injects it: the domain never touches a
@@ -31,6 +34,7 @@ export class Book {
       rating?: number;
       observation?: string;
       language?: string;
+      favorited?: boolean;
     },
     id: string,
   ): Book {
@@ -56,6 +60,7 @@ export class Book {
       props.rating !== undefined ? Rating.create(props.rating) : undefined,
       props.observation,
       props.language !== undefined ? Language.create(props.language) : undefined,
+      props.favorited,
     );
   }
 
@@ -73,6 +78,7 @@ export class Book {
     rating?: Rating;
     observation?: string;
     language?: Language;
+    favorited?: boolean;
   }): Book {
     return new Book(
       props.id,
@@ -83,6 +89,7 @@ export class Book {
       props.rating,
       props.observation,
       props.language,
+      props.favorited,
     );
   }
 

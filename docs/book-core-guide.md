@@ -104,6 +104,7 @@ Cada campo vira um Value Object tipado:
 | `rating`      | Não                | `number`        | ausente     | `4`                                      |
 | `observation` | Não                | `string`        | ausente     | `"Buy second copy"`                      |
 | `language`    | Não                | `string`        | ausente     | `"en"`                                   |
+| `favorited`   | Não                | `boolean`       | ausente     | `true`                                   |
 
 Regra de bolso: **para cadastrar, gere um UUID, informe `title`, `authors` (pode ser
 `[]`) e `isbn`.** Todo o resto é opcional.
@@ -204,6 +205,14 @@ Valores aceitos, exatos após remover espaços (sensível a maiúsculas):
 
 - Texto livre, sem validação nem normalização — guardado como informado.
 - Ausente significa "sem observação". Uso típico: notas pessoais, "capa danificada".
+
+### 5.9 `favorited` — marca de favorito (opcional)
+
+- Valor booleano simples, sem validação de domínio. `true` indica que o livro é
+  favorito, `false` indica que não é.
+- Ausente significa "não favoritado". Como não há validação, qualquer valor
+  booleano é aceito — cabe ao app consumidor decidir como usar essa marca.
+- `book.favorited` lê o valor (`true`, `false` ou `undefined`).
 
 ## 6. Criar vs. restaurar
 
@@ -362,6 +371,7 @@ Book.create(
     rating: 4,
     observation: "Buy second copy",
     language: "en",
+    favorited: true,
   },
   "550e8400-e29b-41d4-a716-446655440000",
 );
@@ -388,7 +398,7 @@ Book.create(
    correto? Se não souber, deixe o núcleo validar e repasse o `code`.
 4. `authors` é uma lista? Pode ser `[]`. Item vazio → `AUTHOR.EMPTY`.
 5. Opcionais só envie se souber: `status` exatamente um dos quatro, `rating` inteiro
-   1–5, `language` `pt` ou `en`, `observation` texto livre.
+   1–5, `language` `pt` ou `en`, `observation` texto livre, `favorited` booleano.
 6. Guarde o `id` usado para buscas futuras (`findById`, `getById`, `delete` recebem
    a string; `book.id.value` lê o valor do livro).
 
