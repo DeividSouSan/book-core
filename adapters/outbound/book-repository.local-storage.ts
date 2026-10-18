@@ -28,8 +28,8 @@ interface StoredBook {
   id: string;
   title: string;
   authors: string[];
+  status: string;
   isbn?: string;
-  status?: string;
   rating?: number;
   observation?: string;
   language?: string;
@@ -55,12 +55,6 @@ function serializeBook(book: Book): StoredBook {
 }
 
 function deserializeGenres(raw: unknown): GenreId[] {
-  // Absent (legacy payload) becomes an empty list: backwards-compatible with
-  // data persisted before genres existed.
-  if (raw === undefined) {
-    return [];
-  }
-
   if (!Array.isArray(raw)) {
     throw new Error("Expected genres to be an array of strings.");
   }
@@ -75,6 +69,48 @@ function deserializeGenres(raw: unknown): GenreId[] {
 }
 
 function deserializeBook(stored: StoredBook): Book {
+  // JSON payloads are untrusted input: without these shape guards a missing or
+  // wrong-typed field surfaces as a raw TypeError (e.g. calling .trim() on
+  // undefined) instead of a clear "which field is broken" message.
+  if (typeof stored !== "object" || stored === null) {
+    throw new Error("Expected a book object but found a different JSON shape.");
+  }
+  if (typeof stored.id !== "string" || stored.id.length === 0) {
+    throw new Error("Book id must be a non-empty string.");
+  }
+  if (typeof stored.title !== "string") {
+    throw new Error("Book title must be a string.");
+  }
+  if (!Array.isArray(stored.authors)) {
+    throw new Error("Expected authors to be an array of strings.");
+  }
+  for (const name of stored.authors) {
+    if (typeof name !== "string") {
+      throw new Error("Each author must be a string.");
+    }
+  }
+  if (typeof stored.status !== "string") {
+    throw new Error("Book status must be a string.");
+  }
+  if (stored.isbn !== undefined && typeof stored.isbn !== "string") {
+    throw new Error("Book isbn must be a string.");
+  }
+  if (stored.rating !== undefined && typeof stored.rating !== "number") {
+    throw new Error("Book rating must be a number.");
+  }
+  if (stored.observation !== undefined && typeof stored.observation !== "string") {
+    throw new Error("Book observation must be a string.");
+  }
+  if (stored.language !== undefined && typeof stored.language !== "string") {
+    throw new Error("Book language must be a string.");
+  }
+  if (stored.favorited !== undefined && typeof stored.favorited !== "boolean") {
+    throw new Error("Book favorited must be a boolean.");
+  }
+  if (stored.cover !== undefined && typeof stored.cover !== "string") {
+    throw new Error("Book cover must be a string.");
+  }
+
   return BookEntity.restore({
     // A stored id that is not a valid UUID fails here and surfaces as
     // StorageCorruptedError — corrupted data, not a silently dropped book.
@@ -82,9 +118,7 @@ function deserializeBook(stored: StoredBook): Book {
     title: Title.create(stored.title),
     authors: stored.authors.map((name) => Author.create(name)),
     isbn: stored.isbn !== undefined ? ISBNValue.create(stored.isbn) : undefined,
-    // Absent status means the record predates the field: restore() applies the
-    // TO_READ default instead of failing on undefined.
-    status: stored.status !== undefined ? ReadingStatus.create(stored.status) : undefined,
+    status: ReadingStatus.create(stored.status),
     rating: stored.rating !== undefined ? Rating.create(stored.rating) : undefined,
     observation: stored.observation,
     language: stored.language !== undefined ? Language.create(stored.language) : undefined,
