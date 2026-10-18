@@ -231,7 +231,12 @@ export class BookRepositoryLocalStorage implements BookRepository {
   }
 
   async findById(id: string): Promise<Book | undefined> {
-    return this.readBooks().find((book) => book.id.value === id);
+    // Uuid stores ids normalized to lowercase, so the received id is
+    // normalized the same way — a UUID differing only in case must still
+    // match. Every BookRepository adapter applies this same rule.
+    const normalizedId = id.toLowerCase();
+
+    return this.readBooks().find((book) => book.id.value === normalizedId);
   }
 
   async getById(id: string): Promise<Book> {
@@ -253,8 +258,9 @@ export class BookRepositoryLocalStorage implements BookRepository {
   }
 
   async delete(id: string): Promise<void> {
+    const normalizedId = id.toLowerCase();
     const books = this.readBooks();
-    const remaining = books.filter((book) => book.id.value !== id);
+    const remaining = books.filter((book) => book.id.value !== normalizedId);
 
     if (remaining.length === books.length) {
       throw new BookNotFoundError(id);

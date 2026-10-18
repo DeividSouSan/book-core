@@ -82,6 +82,16 @@ describe("BookRepositoryLocalStorage", () => {
       expect(found).toBeUndefined();
     });
 
+    it("finds a book by an id differing only in case", async () => {
+      const repository = new BookRepositoryLocalStorage(new FakeStorage());
+      await repository.save(createBook({ id: "abcdef12-0000-4000-8000-000000000001" }));
+
+      const found = await repository.findById("ABCDEF12-0000-4000-8000-000000000001");
+
+      expect(found).toBeDefined();
+      expect(found?.id.value).toBe("abcdef12-0000-4000-8000-000000000001");
+    });
+
     it("overwrites the existing book when saving the same id", async () => {
       const storage = new FakeStorage();
       const repository = new BookRepositoryLocalStorage(storage);
@@ -295,6 +305,15 @@ describe("BookRepositoryLocalStorage", () => {
       await repository.delete("77777777-7777-4777-8777-777777777777");
 
       expect(await repository.findById("77777777-7777-4777-8777-777777777777")).toBeUndefined();
+    });
+
+    it("deletes a book by an id differing only in case", async () => {
+      const repository = new BookRepositoryLocalStorage(new FakeStorage());
+      await repository.save(createBook({ id: "abcdef12-0000-4000-8000-000000000002" }));
+
+      await repository.delete("ABCDEF12-0000-4000-8000-000000000002");
+
+      expect(await repository.findById("abcdef12-0000-4000-8000-000000000002")).toBeUndefined();
     });
 
     it("throws BookNotFoundError when book does not exist", async () => {

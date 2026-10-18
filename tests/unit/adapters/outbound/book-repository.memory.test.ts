@@ -93,6 +93,18 @@ describe("BookRepositoryMemory", () => {
       expect(found).toBeUndefined();
     });
 
+    it("finds a book by an id differing only in case", async () => {
+      const repository = new BookRepositoryMemory();
+      const book = createBook({ id: "abcdef12-0000-4000-8000-000000000001" });
+
+      await repository.save(book);
+
+      const found = await repository.findById("ABCDEF12-0000-4000-8000-000000000001");
+
+      expect(found).toBeDefined();
+      expect(found?.id.value).toBe("abcdef12-0000-4000-8000-000000000001");
+    });
+
     it("getById throws BookNotFoundError when book does not exist", async () => {
       const repository = new BookRepositoryMemory();
 
@@ -109,6 +121,17 @@ describe("BookRepositoryMemory", () => {
 
       expect(found.id.value).toBe("22222222-2222-4222-8222-222222222222");
       expect(found.title.value).toBe("The Hobbit");
+    });
+
+    it("getById returns the book by an id differing only in case", async () => {
+      const repository = new BookRepositoryMemory();
+      const book = createBook({ id: "abcdef12-0000-4000-8000-000000000002" });
+
+      await repository.save(book);
+
+      const found = await repository.getById("ABCDEF12-0000-4000-8000-000000000002");
+
+      expect(found.id.value).toBe("abcdef12-0000-4000-8000-000000000002");
     });
   });
 
@@ -191,6 +214,18 @@ describe("BookRepositoryMemory", () => {
       await repository.delete("77777777-7777-4777-8777-777777777777");
 
       const found = await repository.findById("77777777-7777-4777-8777-777777777777");
+
+      expect(found).toBeUndefined();
+    });
+
+    it("deletes a book by an id differing only in case", async () => {
+      const repository = new BookRepositoryMemory();
+      const book = createBook({ id: "abcdef12-0000-4000-8000-000000000003" });
+
+      await repository.save(book);
+      await repository.delete("ABCDEF12-0000-4000-8000-000000000003");
+
+      const found = await repository.findById("abcdef12-0000-4000-8000-000000000003");
 
       expect(found).toBeUndefined();
     });

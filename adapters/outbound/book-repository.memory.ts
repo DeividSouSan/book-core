@@ -11,11 +11,14 @@ export class BookRepositoryMemory implements BookRepository {
   }
 
   async findById(id: string): Promise<Book | undefined> {
-    return this.books.get(id);
+    // Uuid stores ids normalized to lowercase, so the received id is
+    // normalized the same way — a UUID differing only in case must still
+    // match. Every BookRepository adapter applies this same rule.
+    return this.books.get(id.toLowerCase());
   }
 
   async getById(id: string): Promise<Book> {
-    const book = this.books.get(id);
+    const book = await this.findById(id);
 
     if (!book) {
       throw new BookNotFoundError(id);
@@ -39,10 +42,12 @@ export class BookRepositoryMemory implements BookRepository {
   }
 
   async delete(id: string): Promise<void> {
-    if (!this.books.has(id)) {
+    const normalizedId = id.toLowerCase();
+
+    if (!this.books.has(normalizedId)) {
       throw new BookNotFoundError(id);
     }
 
-    this.books.delete(id);
+    this.books.delete(normalizedId);
   }
 }
