@@ -7,11 +7,15 @@ export class Uuid {
   static create(receivedValue: string): Uuid {
     // Any UUID version is accepted (not just v4): the core only needs a
     // well-formed identity, the caller chooses which generator to use.
-    if (!UUID_PATTERN.test(receivedValue)) {
+    // The value is normalized to lowercase so that UUIDs differing only in
+    // case (e.g. from different generators) compare equal and work as Map keys.
+    const value = receivedValue.toLowerCase();
+
+    if (!UUID_PATTERN.test(value)) {
       throw new InvalidUuidError(receivedValue);
     }
 
-    return new Uuid(receivedValue);
+    return new Uuid(value);
   }
 
   equals(other: Uuid): boolean {

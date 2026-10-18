@@ -25,10 +25,10 @@ describe("Uuid", () => {
       );
     });
 
-    it("accepts uppercase UUIDs", () => {
+    it("normalizes uppercase UUIDs to lowercase", () => {
       const uuid = Uuid.create("550E8400-E29B-41D4-A716-446655440000");
 
-      expect(uuid.value).toBe("550E8400-E29B-41D4-A716-446655440000");
+      expect(uuid.value).toBe("550e8400-e29b-41d4-a716-446655440000");
     });
 
     it("throws InvalidUuidError for an empty string", () => {
@@ -64,6 +64,14 @@ describe("Uuid", () => {
     it("returns true for the same value", () => {
       expect(
         Uuid.create("550e8400-e29b-41d4-a716-446655440000").equals(
+          Uuid.create("550e8400-e29b-41d4-a716-446655440000"),
+        ),
+      ).toBe(true);
+    });
+
+    it("treats UUIDs differing only by case as equal", () => {
+      expect(
+        Uuid.create("550E8400-E29B-41D4-A716-446655440000").equals(
           Uuid.create("550e8400-e29b-41d4-a716-446655440000"),
         ),
       ).toBe(true);
