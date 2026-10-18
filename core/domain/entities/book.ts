@@ -10,6 +10,25 @@ import { TO_READ_STATUS } from "../value-objects/reading-status.constants.js";
 import { DuplicateGenreIdError } from "../errors/duplicate-genre-id.error.js";
 import { EmptyCoverError } from "../errors/empty-cover.error.js";
 
+// Fields a book can change after creation. Each with*/without* method feeds
+// this partial with already-validated domain values, so copyWith only has to
+// assemble the new book.
+type BookChanges = Partial<
+  Pick<
+    Book,
+    | "title"
+    | "authors"
+    | "isbn"
+    | "status"
+    | "rating"
+    | "observation"
+    | "language"
+    | "favorited"
+    | "cover"
+    | "genres"
+  >
+>;
+
 export class Book {
   private constructor(
     public readonly id: Uuid,
@@ -133,6 +152,35 @@ export class Book {
 
   equals(other: Book): boolean {
     return this.id.equals(other.id);
+  }
+
+  withTitle(title: string): Book {
+    return this.copyWith({ title: Title.create(title) });
+  }
+
+  // Single place where a Book is rebuilt with replaced fields: listed fields
+  // overwrite the current values, unlisted fields keep them (an explicit
+  // `undefined` erases an optional field, e.g. withoutRating).
+  // Arrays are always copied — `readonly` is compile-time only, so sharing an
+  // array between two books would reintroduce array aliasing: mutating one
+  // book's authors/genres would silently corrupt the other.
+  private copyWith(changes: BookChanges): Book {
+    const next = { ...this, ...changes };
+    // Required fields are resolved explicitly: they can only be replaced, never
+    // erased. Optional fields come from the merge so `undefined` erases them.
+    return new Book(
+      this.id,
+      changes.title ?? this.title,
+      [...(changes.authors ?? this.authors)],
+      next.isbn,
+      changes.status ?? this.status,
+      next.rating,
+      next.observation,
+      next.language,
+      next.favorited,
+      next.cover,
+      [...(changes.genres ?? this.genres)],
+    );
   }
 }
 
