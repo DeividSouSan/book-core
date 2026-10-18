@@ -637,6 +637,79 @@ describe("Book", () => {
     });
   });
 
+  describe("withCover", () => {
+    it("returns a new book with the new cover", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const covered = book.withCover("https://example.com/cover.jpg");
+
+      expect(covered.cover).toBe("https://example.com/cover.jpg");
+      expect(covered).not.toBe(book);
+    });
+
+    it("keeps every other field intact", () => {
+      const book = Book.create(
+        {
+          ...validProps,
+          status: "READING",
+          rating: 4,
+          observation: "Slow start",
+          language: "en",
+          favorited: true,
+          genres: ["Fantasy"],
+        },
+        FIRST_UUID,
+      );
+
+      const covered = book.withCover("https://example.com/cover.jpg");
+
+      expect(covered.id.value).toBe(book.id.value);
+      expect(covered.authors.map((author) => author.value)).toEqual(["J.R.R. Tolkien"]);
+      expect(covered.isbn?.value).toBe("9780261102217");
+      expect(covered.status.value).toBe("READING");
+      expect(covered.rating?.value).toBe(4);
+      expect(covered.observation).toBe("Slow start");
+      expect(covered.language?.value).toBe("en");
+      expect(covered.favorited).toBe(true);
+      expect(covered.genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
+      expect(covered.cover).toBe("https://example.com/cover.jpg");
+    });
+
+    it("leaves the original book untouched", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      book.withCover("https://example.com/cover.jpg");
+
+      expect(book.cover).toBeUndefined();
+    });
+
+    it("trims cover before storing", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const covered = book.withCover("  https://example.com/cover.jpg  ");
+
+      expect(covered.cover).toBe("https://example.com/cover.jpg");
+    });
+
+    it("propagates cover exactly as provided after trim", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const covered = book.withCover("https://example.com/capa.jpg");
+
+      expect(covered.cover).toBe("https://example.com/capa.jpg");
+    });
+
+    it("throws EmptyCoverError with code and received value for a blank cover", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const error = catchError(() => book.withCover("   "));
+
+      expect(error).toBeInstanceOf(EmptyCoverError);
+      expect((error as EmptyCoverError).code).toBe("COVER.EMPTY");
+      expect((error as EmptyCoverError).receivedValue).toBe("   ");
+    });
+  });
+
   describe("withoutGenre", () => {
     it("removes the genre and leaves the original untouched", () => {
       const book = Book.create({ ...validProps, genres: ["Fantasy", "Horror"] }, FIRST_UUID);
