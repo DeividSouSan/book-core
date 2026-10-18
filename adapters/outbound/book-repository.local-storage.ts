@@ -54,77 +54,148 @@ function serializeBook(book: Book): StoredBook {
   };
 }
 
-function deserializeGenres(raw: unknown): GenreId[] {
-  if (!Array.isArray(raw)) {
-    throw new Error("Expected genres to be an array of strings.");
+// Reads one stored field and rethrows any shape or domain failure with the
+// book position, stored id, field name and received value, so a corrupted
+// payload points at the exact broken field instead of a raw TypeError.
+function deserializeField<T>(
+  index: number,
+  id: unknown,
+  field: string,
+  value: unknown,
+  parse: () => T,
+): T {
+  try {
+    return parse();
+  } catch (originalError) {
+    throw new Error(
+      `Invalid book at index ${index} (id ${JSON.stringify(id)}): field "${field}" with value ${JSON.stringify(value)} is invalid (${(originalError as Error).message}).`,
+      { cause: originalError },
+    );
   }
-
-  return raw.map((item) => {
-    if (typeof item !== "string" || item.trim().length === 0) {
-      throw new Error("Each genre must be a non-empty string.");
-    }
-
-    return GenreId.create(item);
-  });
 }
 
-function deserializeBook(stored: StoredBook): Book {
-  // JSON payloads are untrusted input: without these shape guards a missing or
-  // wrong-typed field surfaces as a raw TypeError (e.g. calling .trim() on
-  // undefined) instead of a clear "which field is broken" message.
+// Reads a stored array field. The array shape is validated inside
+// deserializeField (so a non-array points at the field itself), while each
+// item is wrapped once on its own — item errors never nest inside a second
+// field-level wrap.
+function deserializeFieldArray<T>(
+  index: number,
+  id: unknown,
+  field: string,
+  raw: unknown,
+  parseItem: (item: unknown) => T,
+): T[] {
+  const items = deserializeField(index, id, field, raw, () => {
+    if (!Array.isArray(raw)) {
+      throw new Error(`Expected ${field} to be an array.`);
+    }
+    return raw;
+  });
+
+  return items.map((item, itemIndex) =>
+    deserializeField(index, id, `${field}[${itemIndex}]`, item, () => parseItem(item)),
+  );
+}
+
+function deserializeBook(stored: StoredBook, index: number): Book {
+  // JSON payloads are untrusted input: every field below is read through
+  // deserializeField so a missing or wrong-typed value points at its book
+  // position, stored id, field name and received value.
   if (typeof stored !== "object" || stored === null) {
-    throw new Error("Expected a book object but found a different JSON shape.");
+    throw new Error(
+      `Invalid book at index ${index}: expected a book object but found a different JSON shape.`,
+    );
   }
-  if (typeof stored.id !== "string" || stored.id.length === 0) {
-    throw new Error("Book id must be a non-empty string.");
-  }
-  if (typeof stored.title !== "string") {
-    throw new Error("Book title must be a string.");
-  }
-  if (!Array.isArray(stored.authors)) {
-    throw new Error("Expected authors to be an array of strings.");
-  }
-  for (const name of stored.authors) {
+  // A stored id that is not a valid UUID fails here and surfaces as
+  // StorageCorruptedError — corrupted data, not a silently dropped book.
+  const id = deserializeField(index, stored.id, "id", stored.id, () => {
+    if (typeof stored.id !== "string" || stored.id.length === 0) {
+      throw new Error("Book id must be a non-empty string.");
+    }
+    return Uuid.create(stored.id);
+  });
+  const title = deserializeField(index, stored.id, "title", stored.title, () => {
+    if (typeof stored.title !== "string") {
+      throw new Error("Book title must be a string.");
+    }
+    return Title.create(stored.title);
+  });
+  const authors = deserializeFieldArray(index, stored.id, "authors", stored.authors, (name) => {
     if (typeof name !== "string") {
       throw new Error("Each author must be a string.");
     }
-  }
-  if (typeof stored.status !== "string") {
-    throw new Error("Book status must be a string.");
-  }
-  if (stored.isbn !== undefined && typeof stored.isbn !== "string") {
-    throw new Error("Book isbn must be a string.");
-  }
-  if (stored.rating !== undefined && typeof stored.rating !== "number") {
-    throw new Error("Book rating must be a number.");
-  }
-  if (stored.observation !== undefined && typeof stored.observation !== "string") {
-    throw new Error("Book observation must be a string.");
-  }
-  if (stored.language !== undefined && typeof stored.language !== "string") {
-    throw new Error("Book language must be a string.");
-  }
-  if (stored.favorited !== undefined && typeof stored.favorited !== "boolean") {
-    throw new Error("Book favorited must be a boolean.");
-  }
-  if (stored.cover !== undefined && typeof stored.cover !== "string") {
-    throw new Error("Book cover must be a string.");
-  }
+    return Author.create(name);
+  });
+  const status = deserializeField(index, stored.id, "status", stored.status, () => {
+    if (typeof stored.status !== "string") {
+      throw new Error("Book status must be a string.");
+    }
+    return ReadingStatus.create(stored.status);
+  });
+  const isbn =
+    stored.isbn === undefined
+      ? undefined
+      : deserializeField(index, stored.id, "isbn", stored.isbn, () => {
+          if (typeof stored.isbn !== "string") {
+            throw new Error("Book isbn must be a string.");
+          }
+          return ISBNValue.create(stored.isbn);
+        });
+  const rating =
+    stored.rating === undefined
+      ? undefined
+      : deserializeField(index, stored.id, "rating", stored.rating, () => {
+          if (typeof stored.rating !== "number") {
+            throw new Error("Book rating must be a number.");
+          }
+          return Rating.create(stored.rating);
+        });
+  const observation = deserializeField(index, stored.id, "observation", stored.observation, () => {
+    if (stored.observation !== undefined && typeof stored.observation !== "string") {
+      throw new Error("Book observation must be a string.");
+    }
+    return stored.observation;
+  });
+  const language =
+    stored.language === undefined
+      ? undefined
+      : deserializeField(index, stored.id, "language", stored.language, () => {
+          if (typeof stored.language !== "string") {
+            throw new Error("Book language must be a string.");
+          }
+          return Language.create(stored.language);
+        });
+  const favorited = deserializeField(index, stored.id, "favorited", stored.favorited, () => {
+    if (stored.favorited !== undefined && typeof stored.favorited !== "boolean") {
+      throw new Error("Book favorited must be a boolean.");
+    }
+    return stored.favorited;
+  });
+  const cover = deserializeField(index, stored.id, "cover", stored.cover, () => {
+    if (stored.cover !== undefined && typeof stored.cover !== "string") {
+      throw new Error("Book cover must be a string.");
+    }
+    return stored.cover;
+  });
+  const genres = deserializeFieldArray(index, stored.id, "genres", stored.genres, (item) => {
+    if (typeof item !== "string" || item.trim().length === 0) {
+      throw new Error("Each genre must be a non-empty string.");
+    }
+    return GenreId.create(item);
+  });
 
   return BookEntity.restore({
-    // A stored id that is not a valid UUID fails here and surfaces as
-    // StorageCorruptedError — corrupted data, not a silently dropped book.
-    id: Uuid.create(stored.id),
-    title: Title.create(stored.title),
-    authors: stored.authors.map((name) => Author.create(name)),
-    isbn: stored.isbn !== undefined ? ISBNValue.create(stored.isbn) : undefined,
-    status: ReadingStatus.create(stored.status),
-    rating: stored.rating !== undefined ? Rating.create(stored.rating) : undefined,
-    observation: stored.observation,
-    language: stored.language !== undefined ? Language.create(stored.language) : undefined,
-    favorited: stored.favorited,
-    cover: stored.cover,
-    genres: deserializeGenres(stored.genres),
+    id,
+    title,
+    authors,
+    isbn,
+    status,
+    rating,
+    observation,
+    language,
+    favorited,
+    cover,
+    genres,
   });
 }
 
@@ -217,7 +288,7 @@ export class BookRepositoryLocalStorage implements BookRepository {
     }
 
     try {
-      return (parsed as StoredBook[]).map(deserializeBook);
+      return (parsed as StoredBook[]).map((stored, index) => deserializeBook(stored, index));
     } catch (cause) {
       throw new StorageCorruptedError(this.key, cause);
     }
