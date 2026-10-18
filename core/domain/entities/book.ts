@@ -166,6 +166,24 @@ export class Book {
     return this.copyWith({ rating: undefined });
   }
 
+  withGenre(genre: string): Book {
+    const genreId = GenreId.create(genre);
+    // Same exact-match rule as create: silently accepting a genre the book
+    // already has would hide a data error from the consumer.
+    ensureNoDuplicateGenreIds([...this.genres, genreId]);
+    return this.copyWith({ genres: [...this.genres, genreId] });
+  }
+
+  // Removing a genre the book does not have is a no-op, not an error: the book
+  // is already in the desired state. Whether a genre "should not be here" is a
+  // consumer rule, not a domain invariant.
+  withoutGenre(genre: string): Book {
+    const genreId = GenreId.create(genre);
+    return this.copyWith({
+      genres: this.genres.filter((existing) => !existing.equals(genreId)),
+    });
+  }
+
   // Single place where a Book is rebuilt with replaced fields: listed fields
   // overwrite the current values, unlisted fields keep them (an explicit
   // `undefined` erases an optional field, e.g. withoutRating).
@@ -192,7 +210,7 @@ export class Book {
   }
 }
 
-// Rejects repeated genre identifiers in create.
+// Rejects repeated genre identifiers (create and withGenre).
 // The comparison is exact (case-sensitive): "Fantasy" and "fantasy" are
 // distinct ids and do not throw. The first throw points at the duplicated value.
 function ensureNoDuplicateGenreIds(genreIds: readonly GenreId[]): void {
