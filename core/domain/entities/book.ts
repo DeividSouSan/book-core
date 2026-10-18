@@ -158,6 +158,14 @@ export class Book {
     return this.copyWith({ title: Title.create(title) });
   }
 
+  withRating(rating: number): Book {
+    return this.copyWith({ rating: Rating.create(rating) });
+  }
+
+  withoutRating(): Book {
+    return this.copyWith({ rating: undefined });
+  }
+
   // Single place where a Book is rebuilt with replaced fields: listed fields
   // overwrite the current values, unlisted fields keep them (an explicit
   // `undefined` erases an optional field, e.g. withoutRating).
