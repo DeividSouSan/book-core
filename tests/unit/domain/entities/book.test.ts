@@ -445,5 +445,29 @@ describe("Book", () => {
 
       expect(withoutGenres.genres).toEqual([]);
     });
+
+    it("copies the input arrays — mutating them after restore does not affect the book", () => {
+      const authors = [Author.create("J.R.R. Tolkien")];
+      const genres = [GenreId.create("Fantasy")];
+      const book = Book.restore({ ...validRestoreProps, authors, genres });
+
+      authors.push(Author.create("Intruder"));
+      genres.push(GenreId.create("Intruder"));
+
+      expect(book.authors).toHaveLength(1);
+      expect(book.genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
+    });
+
+    it("copies the input arrays — mutating the book arrays does not affect the input", () => {
+      const authors = [Author.create("J.R.R. Tolkien")];
+      const genres = [GenreId.create("Fantasy")];
+      const book = Book.restore({ ...validRestoreProps, authors, genres });
+
+      (book.authors as Author[]).push(Author.create("Intruder"));
+      (book.genres as GenreId[]).push(GenreId.create("Intruder"));
+
+      expect(authors).toHaveLength(1);
+      expect(genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
+    });
   });
 });
