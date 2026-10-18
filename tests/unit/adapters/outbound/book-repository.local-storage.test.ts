@@ -304,6 +304,22 @@ describe("BookRepositoryLocalStorage", () => {
     });
   });
 
+  // A complete stored book in the current storage format. Each corrupted-data
+  // test below spreads this base and overrides a single field.
+  const validStoredBook = {
+    id: "88888888-8888-4888-8888-888888888888",
+    title: "The Hobbit",
+    authors: ["J.R.R. Tolkien"],
+    status: "TO_READ",
+    isbn: "9780261102217",
+    rating: 5,
+    observation: "Masterpiece",
+    language: "en",
+    favorited: true,
+    cover: "https://example.com/cover.jpg",
+    genres: ["Fantasy"],
+  };
+
   describe("corrupted data", () => {
     it("throws StorageCorruptedError when the stored value is not valid JSON", async () => {
       const storage = new FakeStorage();
@@ -337,6 +353,53 @@ describe("BookRepositoryLocalStorage", () => {
 
       expect(error).toBeInstanceOf(StorageCorruptedError);
       expect((error as StorageCorruptedError).key).toBe(DEFAULT_STORAGE_KEY);
+    });
+
+    it.each([
+      { field: "id", value: 42, stored: { ...validStoredBook, id: 42 } },
+      { field: "id", value: "", stored: { ...validStoredBook, id: "" } },
+      { field: "title", value: "", stored: { ...validStoredBook, title: "" } },
+      { field: "title", value: 42, stored: { ...validStoredBook, title: 42 } },
+      {
+        field: "authors",
+        value: "J.R.R. Tolkien",
+        stored: { ...validStoredBook, authors: "J.R.R. Tolkien" },
+      },
+      { field: "authors[0]", value: 42, stored: { ...validStoredBook, authors: [42] } },
+      { field: "status", value: "ABANDONED", stored: { ...validStoredBook, status: "ABANDONED" } },
+      { field: "status", value: 42, stored: { ...validStoredBook, status: 42 } },
+      { field: "isbn", value: 42, stored: { ...validStoredBook, isbn: 42 } },
+      { field: "isbn", value: "123", stored: { ...validStoredBook, isbn: "123" } },
+      { field: "rating", value: "five", stored: { ...validStoredBook, rating: "five" } },
+      { field: "rating", value: 7, stored: { ...validStoredBook, rating: 7 } },
+      { field: "observation", value: 42, stored: { ...validStoredBook, observation: 42 } },
+      { field: "language", value: 42, stored: { ...validStoredBook, language: 42 } },
+      { field: "language", value: "fr", stored: { ...validStoredBook, language: "fr" } },
+      { field: "favorited", value: "yes", stored: { ...validStoredBook, favorited: "yes" } },
+      { field: "cover", value: 42, stored: { ...validStoredBook, cover: 42 } },
+      { field: "genres", value: "Fantasy", stored: { ...validStoredBook, genres: "Fantasy" } },
+      {
+        field: "genres[1]",
+        value: "",
+        stored: { ...validStoredBook, genres: ["Fantasy", ""] },
+      },
+      { field: "authors[0]", value: null, stored: { ...validStoredBook, authors: [null] } },
+      { field: "genres[0]", value: null, stored: { ...validStoredBook, genres: [null] } },
+    ])("points at $field when it holds an invalid value", async ({ field, value, stored }) => {
+      const storage = new FakeStorage();
+      const repository = new BookRepositoryLocalStorage(storage);
+      storage.setItem(DEFAULT_STORAGE_KEY, JSON.stringify([stored]));
+
+      const error = await repository.findAll().catch((e) => e);
+      const expectedId = field === "id" ? value : validStoredBook.id;
+
+      expect(error).toBeInstanceOf(StorageCorruptedError);
+      expect((error as StorageCorruptedError).code).toBe("STORAGE.CORRUPTED");
+      const cause = (error as StorageCorruptedError).cause as Error;
+      expect(cause.message).toContain(`field "${field}"`);
+      expect(cause.message).toContain(`value ${JSON.stringify(value)}`);
+      expect(cause.message).toContain("index 0");
+      expect(cause.message).toContain(`(id ${JSON.stringify(expectedId)})`);
     });
   });
 });
