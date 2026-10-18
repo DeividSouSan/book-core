@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { EmptyAuthorError } from "../../../../core/domain/errors/empty-author.error";
 import { Author } from "../../../../core/domain/value-objects/author";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 describe("Author", () => {
   describe("create", () => {

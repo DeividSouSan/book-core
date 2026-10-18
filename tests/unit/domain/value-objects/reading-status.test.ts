@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { InvalidReadingStatusError } from "../../../../core/domain/errors/invalid-reading-status.error";
 import { ReadingStatus } from "../../../../core/domain/value-objects/reading-status";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 describe("ReadingStatus", () => {
   describe("create", () => {

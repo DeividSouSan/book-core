@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { InvalidLanguageError } from "../../../../core/domain/errors/invalid-language.error";
 import { Language } from "../../../../core/domain/value-objects/language";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 describe("Language", () => {
   describe("create", () => {

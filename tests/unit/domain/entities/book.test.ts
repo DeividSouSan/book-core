@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { DomainError } from "../../../../core/domain/errors/domain.error";
 import { EmptyTitleError } from "../../../../core/domain/errors/empty-title.error";
 import { EmptyAuthorError } from "../../../../core/domain/errors/empty-author.error";
@@ -20,15 +21,6 @@ import { Rating } from "../../../../core/domain/value-objects/rating";
 import { Language } from "../../../../core/domain/value-objects/language";
 import { GenreId } from "../../../../core/domain/value-objects/genre-id";
 import { Uuid } from "../../../../core/domain/value-objects/uuid";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 const FIRST_UUID = "550e8400-e29b-41d4-a716-446655440000";
 const SECOND_UUID = "6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b";

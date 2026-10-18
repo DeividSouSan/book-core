@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { InvalidUuidError } from "../../../../core/domain/errors/invalid-uuid.error";
 import { Uuid } from "../../../../core/domain/value-objects/uuid";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 describe("Uuid", () => {
   describe("create", () => {

@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { EmptyGenreIdError } from "../../../../core/domain/errors/empty-genre-id.error";
 import { GenreId } from "../../../../core/domain/value-objects/genre-id";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 describe("GenreId", () => {
   describe("create", () => {

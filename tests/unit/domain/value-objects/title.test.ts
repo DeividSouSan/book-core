@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { EmptyTitleError } from "../../../../core/domain/errors/empty-title.error";
 import { Title } from "../../../../core/domain/value-objects/title";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 describe("Title", () => {
   describe("create", () => {

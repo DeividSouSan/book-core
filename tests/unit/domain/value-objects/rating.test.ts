@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { catchError } from "../../../helpers/catch-error";
 import { InvalidRatingError } from "../../../../core/domain/errors/invalid-rating.error";
 import { Rating } from "../../../../core/domain/value-objects/rating";
-
-function catchError(action: () => unknown): unknown {
-  try {
-    action();
-    return undefined;
-  } catch (error) {
-    return error;
-  }
-}
 
 describe("Rating", () => {
   describe("create", () => {
