@@ -67,7 +67,7 @@ describe("BookRepositoryLocalStorage", () => {
       expect(found?.id.value).toBe("11111111-1111-4111-8111-111111111111");
       expect(found?.title.value).toBe("The Hobbit");
       expect(found?.authors[0].value).toBe("J.R.R. Tolkien");
-      expect(found?.isbn.value).toBe("9780261102217");
+      expect(found?.isbn?.value).toBe("9780261102217");
       expect(found?.status.value).toBe("READ");
       expect(found?.rating?.value).toBe(5);
       expect(found?.observation).toBe("Masterpiece");
@@ -265,6 +265,45 @@ describe("BookRepositoryLocalStorage", () => {
 
       expect(error).toBeInstanceOf(StorageCorruptedError);
       expect((error as StorageCorruptedError).code).toBe("STORAGE.CORRUPTED");
+    });
+  });
+
+  describe("isbn", () => {
+    it("round trip preserves books without ISBN", async () => {
+      const storage = new FakeStorage();
+      const repository = new BookRepositoryLocalStorage(storage);
+      const book = Book.create(
+        {
+          title: "The Hobbit",
+          authors: ["J.R.R. Tolkien"],
+        },
+        "11111111-1111-4111-8111-111111111111",
+      );
+
+      await repository.save(book);
+
+      const found = await repository.findById("11111111-1111-4111-8111-111111111111");
+
+      expect(found?.isbn).toBeUndefined();
+    });
+
+    it("loads legacy payloads without ISBN with isbn undefined", async () => {
+      const storage = new FakeStorage();
+      const repository = new BookRepositoryLocalStorage(storage);
+      storage.setItem(
+        DEFAULT_STORAGE_KEY,
+        JSON.stringify([
+          {
+            id: "88888888-8888-4888-8888-888888888888",
+            title: "The Hobbit",
+            authors: ["J.R.R. Tolkien"],
+          },
+        ]),
+      );
+
+      const found = await repository.findById("88888888-8888-4888-8888-888888888888");
+
+      expect(found?.isbn).toBeUndefined();
     });
   });
 

@@ -26,7 +26,7 @@ export class BookRepositoryMemory implements BookRepository {
 
   async findByIsbn(isbn: ISBN): Promise<Book | undefined> {
     for (const book of this.books.values()) {
-      if (book.isbn.value === isbn.value) {
+      if (book.isbn?.value === isbn.value) {
         return book;
       }
     }

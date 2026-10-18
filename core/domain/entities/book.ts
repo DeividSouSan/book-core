@@ -14,7 +14,7 @@ export class Book {
     public readonly id: Uuid,
     public readonly title: Title,
     public readonly authors: readonly Author[],
-    public readonly isbn: ISBN,
+    public readonly isbn: ISBN | undefined,
     public readonly status: ReadingStatus,
     public readonly rating: Rating | undefined,
     public readonly observation: string | undefined,
@@ -35,7 +35,7 @@ export class Book {
     props: {
       title: string;
       authors: string[];
-      isbn: string;
+      isbn?: string;
       status?: string;
       rating?: number;
       observation?: string;
@@ -75,7 +75,9 @@ export class Book {
       Uuid.create(id),
       Title.create(props.title),
       authors,
-      ISBN.create(props.isbn),
+      // ISBN é opcional: um app casual pode não ter o ISBN do livro em mãos.
+      // Quando informado, valida normalmente; quando ausente, fica undefined.
+      props.isbn !== undefined ? ISBN.create(props.isbn) : undefined,
       status,
       props.rating !== undefined ? Rating.create(props.rating) : undefined,
       props.observation,
@@ -95,7 +97,7 @@ export class Book {
     id: Uuid;
     title: Title;
     authors: Author[];
-    isbn: ISBN;
+    isbn?: ISBN;
     status?: ReadingStatus;
     rating?: Rating;
     observation?: string;

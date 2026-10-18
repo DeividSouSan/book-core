@@ -46,7 +46,7 @@ describe("Book", () => {
       expect(book.id).toBeInstanceOf(Uuid);
       expect(book.id.value).toBe(FIRST_UUID);
       expect(book.title.value).toBe("The Hobbit");
-      expect(book.isbn.value).toBe("9780261102217");
+      expect(book.isbn!.value).toBe("9780261102217");
       expect(book.authors).toHaveLength(1);
       expect(book.authors[0].value).toBe("J.R.R. Tolkien");
     });
@@ -260,6 +260,19 @@ describe("Book", () => {
       expect((error as InvalidLanguageError).code).toBe("LANGUAGE.INVALID");
       expect((error as InvalidLanguageError).receivedValue).toBe("fr");
     });
+
+    it("creates a book without ISBN when not provided", () => {
+      const book = Book.create({ ...validProps, isbn: undefined }, FIRST_UUID);
+
+      expect(book.isbn).toBeUndefined();
+    });
+
+    it("still throws EmptyISBNError when an empty ISBN is provided", () => {
+      const error = catchError(() => Book.create({ ...validProps, isbn: "" }, FIRST_UUID));
+
+      expect(error).toBeInstanceOf(EmptyISBNError);
+      expect((error as EmptyISBNError).code).toBe("ISBN.EMPTY");
+    });
   });
 
   describe("genres", () => {
@@ -330,7 +343,7 @@ describe("Book", () => {
       expect(book.title.value).toBe("The Hobbit");
       expect(book.authors).toHaveLength(1);
       expect(book.authors[0].value).toBe("J.R.R. Tolkien");
-      expect(book.isbn.value).toBe("9780261102217");
+      expect(book.isbn!.value).toBe("9780261102217");
     });
 
     it("preserves title, authors and isbn exactly as provided", () => {

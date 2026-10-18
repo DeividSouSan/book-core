@@ -28,7 +28,7 @@ interface StoredBook {
   id: string;
   title: string;
   authors: string[];
-  isbn: string;
+  isbn?: string;
   status?: string;
   rating?: number;
   observation?: string;
@@ -43,7 +43,7 @@ function serializeBook(book: Book): StoredBook {
     id: book.id.value,
     title: book.title.value,
     authors: book.authors.map((author) => author.value),
-    isbn: book.isbn.value,
+    isbn: book.isbn?.value,
     status: book.status.value,
     rating: book.rating?.value,
     observation: book.observation,
@@ -81,7 +81,7 @@ function deserializeBook(stored: StoredBook): Book {
     id: Uuid.create(stored.id),
     title: Title.create(stored.title),
     authors: stored.authors.map((name) => Author.create(name)),
-    isbn: ISBNValue.create(stored.isbn),
+    isbn: stored.isbn !== undefined ? ISBNValue.create(stored.isbn) : undefined,
     // Absent status means the record predates the field: restore() applies the
     // TO_READ default instead of failing on undefined.
     status: stored.status !== undefined ? ReadingStatus.create(stored.status) : undefined,
@@ -140,7 +140,7 @@ export class BookRepositoryLocalStorage implements BookRepository {
   }
 
   async findByIsbn(isbn: ISBN): Promise<Book | undefined> {
-    return this.readBooks().find((book) => book.isbn.value === isbn.value);
+    return this.readBooks().find((book) => book.isbn?.value === isbn.value);
   }
 
   async findAll(): Promise<Book[]> {
