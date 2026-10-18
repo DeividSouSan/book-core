@@ -19,8 +19,12 @@ describe("Title", () => {
       expect((error as EmptyTitleError).code).toBe("TITLE.EMPTY");
     });
 
-    it("throws EmptyTitleError for blank input", () => {
-      expect(catchError(() => Title.create("   "))).toBeInstanceOf(EmptyTitleError);
+    it("throws EmptyTitleError for blank input, with code and context", () => {
+      const error = catchError(() => Title.create("   "));
+
+      expect(error).toBeInstanceOf(EmptyTitleError);
+      expect((error as EmptyTitleError).code).toBe("TITLE.EMPTY");
+      expect((error as EmptyTitleError).receivedValue).toBe("   ");
     });
   });
 

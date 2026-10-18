@@ -26,6 +26,7 @@ describe("Rating", () => {
 
       expect(error).toBeInstanceOf(InvalidRatingError);
       expect((error as InvalidRatingError).receivedValue).toBe(6);
+      expect((error as InvalidRatingError).code).toBe("RATING.INVALID");
     });
 
     it("throws InvalidRatingError for a non-integer rating", () => {
@@ -33,6 +34,7 @@ describe("Rating", () => {
 
       expect(error).toBeInstanceOf(InvalidRatingError);
       expect((error as InvalidRatingError).receivedValue).toBe(3.5);
+      expect((error as InvalidRatingError).code).toBe("RATING.INVALID");
     });
   });
 

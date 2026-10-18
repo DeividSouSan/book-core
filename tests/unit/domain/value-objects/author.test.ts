@@ -19,8 +19,12 @@ describe("Author", () => {
       expect((error as EmptyAuthorError).code).toBe("AUTHOR.EMPTY");
     });
 
-    it("throws EmptyAuthorError for blank input", () => {
-      expect(catchError(() => Author.create("   "))).toBeInstanceOf(EmptyAuthorError);
+    it("throws EmptyAuthorError for blank input, with code and context", () => {
+      const error = catchError(() => Author.create("   "));
+
+      expect(error).toBeInstanceOf(EmptyAuthorError);
+      expect((error as EmptyAuthorError).code).toBe("AUTHOR.EMPTY");
+      expect((error as EmptyAuthorError).receivedValue).toBe("   ");
     });
   });
 
