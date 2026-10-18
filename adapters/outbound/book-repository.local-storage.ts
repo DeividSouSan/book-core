@@ -10,6 +10,7 @@ import { Uuid } from "../../core/domain/value-objects/uuid.js";
 import { ReadingStatus } from "../../core/domain/value-objects/reading-status.js";
 import { Rating } from "../../core/domain/value-objects/rating.js";
 import { Language } from "../../core/domain/value-objects/language.js";
+import { GenreId } from "../../core/domain/value-objects/genre-id.js";
 import { DEFAULT_STORAGE_KEY } from "./book-repository.local-storage.constants.js";
 import { StorageCorruptedError } from "./storage-corrupted.error.js";
 
@@ -34,6 +35,7 @@ interface StoredBook {
   language?: string;
   favorited?: boolean;
   cover?: string;
+  genres: string[];
 }
 
 function serializeBook(book: Book): StoredBook {
@@ -48,7 +50,28 @@ function serializeBook(book: Book): StoredBook {
     language: book.language?.value,
     favorited: book.favorited,
     cover: book.cover,
+    genres: book.genres.map((genre) => genre.value),
   };
+}
+
+function deserializeGenres(raw: unknown): GenreId[] {
+  // Ausente (payload legado) vira lista vazia: retrocompatível com dados
+  // persistidos antes de genres existir.
+  if (raw === undefined) {
+    return [];
+  }
+
+  if (!Array.isArray(raw)) {
+    throw new Error("Expected genres to be an array of strings.");
+  }
+
+  return raw.map((item) => {
+    if (typeof item !== "string" || item.trim().length === 0) {
+      throw new Error("Each genre must be a non-empty string.");
+    }
+
+    return GenreId.create(item);
+  });
 }
 
 function deserializeBook(stored: StoredBook): Book {
@@ -67,6 +90,7 @@ function deserializeBook(stored: StoredBook): Book {
     language: stored.language !== undefined ? Language.create(stored.language) : undefined,
     favorited: stored.favorited,
     cover: stored.cover,
+    genres: deserializeGenres(stored.genres),
   });
 }
 

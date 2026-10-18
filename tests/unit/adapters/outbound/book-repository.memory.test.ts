@@ -49,6 +49,25 @@ describe("BookRepositoryMemory", () => {
       expect(found?.title.value).toBe("The Hobbit");
     });
 
+    it("round trip preserves genres", async () => {
+      const repository = new BookRepositoryMemory();
+      const book = Book.create(
+        {
+          title: "The Hobbit",
+          authors: ["J.R.R. Tolkien"],
+          isbn: "978-0-261-10221-7",
+          genres: ["Fantasy", "Sci-Fi"],
+        },
+        DEFAULT_UUID,
+      );
+
+      await repository.save(book);
+
+      const found = await repository.findById(DEFAULT_UUID);
+
+      expect(found?.genres.map((g) => g.value)).toEqual(["Fantasy", "Sci-Fi"]);
+    });
+
     it("returns undefined when book is not found by id", async () => {
       const repository = new BookRepositoryMemory();
 

@@ -182,6 +182,92 @@ describe("BookRepositoryLocalStorage", () => {
     });
   });
 
+  describe("genres", () => {
+    it("round trip preserves genres", async () => {
+      const storage = new FakeStorage();
+      const repository = new BookRepositoryLocalStorage(storage);
+      const book = Book.create(
+        {
+          title: "The Hobbit",
+          authors: ["J.R.R. Tolkien"],
+          isbn: "978-0-261-10221-7",
+          genres: ["Fantasy", "Sci-Fi"],
+        },
+        "11111111-1111-4111-8111-111111111111",
+      );
+
+      await repository.save(book);
+
+      const found = await repository.findById("11111111-1111-4111-8111-111111111111");
+
+      expect(found?.genres.map((g) => g.value)).toEqual(["Fantasy", "Sci-Fi"]);
+    });
+
+    it("loads legacy payloads without genres as an empty list", async () => {
+      const storage = new FakeStorage();
+      const repository = new BookRepositoryLocalStorage(storage);
+      storage.setItem(
+        DEFAULT_STORAGE_KEY,
+        JSON.stringify([
+          {
+            id: "88888888-8888-4888-8888-888888888888",
+            title: "The Hobbit",
+            authors: ["J.R.R. Tolkien"],
+            isbn: "9780261102217",
+          },
+        ]),
+      );
+
+      const found = await repository.findById("88888888-8888-4888-8888-888888888888");
+
+      expect(found?.genres).toEqual([]);
+    });
+
+    it("throws STORAGE.CORRUPTED when genres is not an array", async () => {
+      const storage = new FakeStorage();
+      const repository = new BookRepositoryLocalStorage(storage);
+      storage.setItem(
+        DEFAULT_STORAGE_KEY,
+        JSON.stringify([
+          {
+            id: "88888888-8888-4888-8888-888888888888",
+            title: "The Hobbit",
+            authors: ["J.R.R. Tolkien"],
+            isbn: "9780261102217",
+            genres: "Fantasy",
+          },
+        ]),
+      );
+
+      const error = await repository.findAll().catch((e) => e);
+
+      expect(error).toBeInstanceOf(StorageCorruptedError);
+      expect((error as StorageCorruptedError).code).toBe("STORAGE.CORRUPTED");
+    });
+
+    it("throws STORAGE.CORRUPTED when genres has a blank item", async () => {
+      const storage = new FakeStorage();
+      const repository = new BookRepositoryLocalStorage(storage);
+      storage.setItem(
+        DEFAULT_STORAGE_KEY,
+        JSON.stringify([
+          {
+            id: "88888888-8888-4888-8888-888888888888",
+            title: "The Hobbit",
+            authors: ["J.R.R. Tolkien"],
+            isbn: "9780261102217",
+            genres: ["Fantasy", ""],
+          },
+        ]),
+      );
+
+      const error = await repository.findAll().catch((e) => e);
+
+      expect(error).toBeInstanceOf(StorageCorruptedError);
+      expect((error as StorageCorruptedError).code).toBe("STORAGE.CORRUPTED");
+    });
+  });
+
   describe("delete", () => {
     it("deletes a book by id", async () => {
       const repository = new BookRepositoryLocalStorage(new FakeStorage());
