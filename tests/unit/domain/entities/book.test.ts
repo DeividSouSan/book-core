@@ -597,4 +597,62 @@ describe("Book", () => {
       expect(book.rating?.value).toBe(5);
     });
   });
+
+  describe("withGenre", () => {
+    it("appends a new genre and leaves the original untouched", () => {
+      const book = Book.create({ ...validProps, genres: ["Fantasy"] }, FIRST_UUID);
+
+      const withHorror = book.withGenre("Horror");
+
+      expect(withHorror.genres.map((genre) => genre.value)).toEqual(["Fantasy", "Horror"]);
+      expect(book.genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
+    });
+
+    it("throws EmptyGenreIdError with code and received value for a blank genre", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const error = catchError(() => book.withGenre("   "));
+
+      expect(error).toBeInstanceOf(EmptyGenreIdError);
+      expect((error as EmptyGenreIdError).code).toBe("GENRE_ID.EMPTY");
+      expect((error as EmptyGenreIdError).receivedValue).toBe("   ");
+    });
+
+    it("throws DuplicateGenreIdError when the book already has the exact genre", () => {
+      const book = Book.create({ ...validProps, genres: ["Fantasy"] }, FIRST_UUID);
+
+      const error = catchError(() => book.withGenre("Fantasy"));
+
+      expect(error).toBeInstanceOf(DuplicateGenreIdError);
+      expect((error as DuplicateGenreIdError).code).toBe("GENRE_ID.DUPLICATED");
+      expect((error as DuplicateGenreIdError).receivedValue).toBe("Fantasy");
+    });
+
+    it("treats genres differing only in case as distinct ids", () => {
+      const book = Book.create({ ...validProps, genres: ["Fantasy"] }, FIRST_UUID);
+
+      const withLowercase = book.withGenre("fantasy");
+
+      expect(withLowercase.genres.map((genre) => genre.value)).toEqual(["Fantasy", "fantasy"]);
+    });
+  });
+
+  describe("withoutGenre", () => {
+    it("removes the genre and leaves the original untouched", () => {
+      const book = Book.create({ ...validProps, genres: ["Fantasy", "Horror"] }, FIRST_UUID);
+
+      const withoutHorror = book.withoutGenre("Horror");
+
+      expect(withoutHorror.genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
+      expect(book.genres).toHaveLength(2);
+    });
+
+    it("does not throw when the genre is not present", () => {
+      const book = Book.create({ ...validProps, genres: ["Fantasy"] }, FIRST_UUID);
+
+      const unchanged = book.withoutGenre("Horror");
+
+      expect(unchanged.genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
+    });
+  });
 });
