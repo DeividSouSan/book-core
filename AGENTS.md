@@ -21,6 +21,16 @@ Escreva código, comentários e descrições de teste em inglês.
 - Composição em vez de imposição: o consumidor pode utilizar apenas parte das funcionalidades sem precisar adotar todas as políticas do núcleo.
 - Extensibilidade: convenções particulares podem ser substituídas ou complementadas sem comprometer o modelo central.
 
+## Migração e compatibilidade com dados antigos
+
+- O projeto ainda não foi lançado: não escreva migração nem tolerância a payloads
+  legados (defaults para campos ausentes, normalização de formatos antigos, branches
+  "retrocompatível").
+- Payload fora do formato atual é dado corrompido: falhe de forma ruidosa
+  (`STORAGE.CORRUPTED`), nunca migre em silêncio.
+- Esta regra vale enquanto estiver escrita aqui. Quando o projeto for lançado, ela
+  deve ser removida e substituída por uma política de versionamento de dados.
+
 ## Comentários
 
 - Escreva comentários quando uma regra não for explícita, não for entendível pelo próprio código ou pelo contexto — e sempre quando for regra de nicho (ex.: só quem estudou o ISBN-13 sabe que posições ímpares pesam 1). O objetivo é que qualquer pessoa contribua sem ser especialista.
