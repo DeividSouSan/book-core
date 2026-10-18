@@ -106,7 +106,7 @@ book-core/
 ├── adapters/
 │   ├── inbound/         # Controladores REST, CLI, etc.
 │   └── outbound/        # Repositórios (PostgreSQL, memória), presenters
-├── docs/                # Guias em linguagem natural ([book-core-guide.md](./docs/book-core-guide.md))
+├── docs/                # Guias em linguagem natural ([book-core-guide.md](./docs/book-core-guide.md), [local-storage-guide.md](./docs/local-storage-guide.md))
 ├── dist/                # Saída compilada (gerada pelo build, não versionada)
 └── tests/               # Testes unitários e de integração
 ```

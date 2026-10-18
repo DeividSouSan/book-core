@@ -12,6 +12,7 @@ Leitura complementar:
 
 - Uso rápido e API: [README](../README.md)
 - Regras de contribuição: [AGENTS](../AGENTS.md)
+- Persistência em localStorage: [Guia do local storage](local-storage-guide.md)
 
 ## 1. O que é o book-core
 
