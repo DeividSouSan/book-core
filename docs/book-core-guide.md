@@ -297,6 +297,17 @@ Book.restore({
   `restore` é para reidratar o que o repositório devolveu — uso de adapters — e
   confia nos dados sem re-validar.
 
+  O que o `restore` aceita sem re-validar (comportamento por design, não bug):
+
+  | Situação                          | Comportamento no `restore`                    |
+  | --------------------------------- | --------------------------------------------- |
+  | Gêneros duplicados (`["A", "A"]`) | Aceitos — `GENRE_ID.DUPLICATED` não é lançado |
+  | `cover` vazio ou só com espaços   | Aceito — sem trim e sem `COVER.EMPTY`         |
+
+  Essas situações nunca surgem via `create`/`with*` (rejeitadas na origem); chegam
+  só de dados externos. Quem chama `restore` fora de um adapter assume a
+  validação — a proteção aqui é a documentação, não o compilador.
+
 ### Atualizar um livro (comportamentos `with*`)
 
 Os campos do `Book` não são mutáveis: cada `with*`/`without*` devolve um livro
