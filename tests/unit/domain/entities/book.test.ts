@@ -470,4 +470,73 @@ describe("Book", () => {
       expect(genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
     });
   });
+
+  describe("withTitle", () => {
+    it("returns a new book with the new title", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const renamed = book.withTitle("The Return of the King");
+
+      expect(renamed.title.value).toBe("The Return of the King");
+      expect(renamed).not.toBe(book);
+    });
+
+    it("keeps every other field intact", () => {
+      const book = Book.create(
+        {
+          ...validProps,
+          status: "READING",
+          rating: 4,
+          observation: "Slow start",
+          language: "en",
+          favorited: true,
+          cover: "https://example.com/cover.jpg",
+          genres: ["Fantasy"],
+        },
+        FIRST_UUID,
+      );
+
+      const renamed = book.withTitle("Another Title");
+
+      expect(renamed.id.value).toBe(book.id.value);
+      expect(renamed.authors.map((author) => author.value)).toEqual(["J.R.R. Tolkien"]);
+      expect(renamed.isbn?.value).toBe("9780261102217");
+      expect(renamed.status.value).toBe("READING");
+      expect(renamed.rating?.value).toBe(4);
+      expect(renamed.observation).toBe("Slow start");
+      expect(renamed.language?.value).toBe("en");
+      expect(renamed.favorited).toBe(true);
+      expect(renamed.cover).toBe("https://example.com/cover.jpg");
+      expect(renamed.genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
+    });
+
+    it("leaves the original book untouched", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      book.withTitle("Changed");
+
+      expect(book.title.value).toBe("The Hobbit");
+    });
+
+    it("throws EmptyTitleError with code and received value for a blank title", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const error = catchError(() => book.withTitle("   "));
+
+      expect(error).toBeInstanceOf(EmptyTitleError);
+      expect((error as EmptyTitleError).code).toBe("TITLE.EMPTY");
+      expect((error as EmptyTitleError).receivedValue).toBe("   ");
+    });
+
+    it("copies the arrays — mutating the new book does not affect the original", () => {
+      const book = Book.create({ ...validProps, genres: ["Fantasy"] }, FIRST_UUID);
+
+      const renamed = book.withTitle("Another Title");
+      (renamed.authors as Author[]).push(Author.create("Intruder"));
+      (renamed.genres as GenreId[]).push(GenreId.create("Intruder"));
+
+      expect(book.authors).toHaveLength(1);
+      expect(book.genres).toHaveLength(1);
+    });
+  });
 });
