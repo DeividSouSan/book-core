@@ -20,6 +20,9 @@ export class Book {
     // favorited is a plain boolean with no domain validation — a book is either
     // marked as a favorite or it is not, and absence means "not favorited".
     public readonly favorited: boolean | undefined,
+    // cover is a plain image URL with no domain validation beyond trimming
+    // surrounding whitespace. Absence means "no cover".
+    public readonly cover: string | undefined,
   ) {}
 
   // The caller generates the id and injects it: the domain never touches a
@@ -35,6 +38,7 @@ export class Book {
       observation?: string;
       language?: string;
       favorited?: boolean;
+      cover?: string;
     },
     id: string,
   ): Book {
@@ -61,6 +65,7 @@ export class Book {
       props.observation,
       props.language !== undefined ? Language.create(props.language) : undefined,
       props.favorited,
+      props.cover !== undefined ? props.cover.trim() : undefined,
     );
   }
 
@@ -79,6 +84,7 @@ export class Book {
     observation?: string;
     language?: Language;
     favorited?: boolean;
+    cover?: string;
   }): Book {
     return new Book(
       props.id,
@@ -90,6 +96,7 @@ export class Book {
       props.observation,
       props.language,
       props.favorited,
+      props.cover,
     );
   }
 

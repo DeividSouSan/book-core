@@ -201,6 +201,39 @@ describe("Book", () => {
       expect(notFavorite.favorited).toBe(false);
     });
 
+    it("defaults cover to undefined when not provided", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      expect(book.cover).toBeUndefined();
+    });
+
+    it("creates a book with cover set", () => {
+      const book = Book.create(
+        { ...validProps, cover: "https://example.com/cover.jpg" },
+        FIRST_UUID,
+      );
+
+      expect(book.cover).toBe("https://example.com/cover.jpg");
+    });
+
+    it("trims cover before storing", () => {
+      const book = Book.create(
+        { ...validProps, cover: "  https://example.com/cover.jpg  " },
+        FIRST_UUID,
+      );
+
+      expect(book.cover).toBe("https://example.com/cover.jpg");
+    });
+
+    it("propagates cover exactly as provided after trim", () => {
+      const book = Book.create(
+        { ...validProps, cover: "https://example.com/capa.jpg" },
+        SECOND_UUID,
+      );
+
+      expect(book.cover).toBe("https://example.com/capa.jpg");
+    });
+
     it("propagates InvalidReadingStatusError with context", () => {
       const error = catchError(() => Book.create({ ...validProps, status: "PAUSED" }, FIRST_UUID));
 
@@ -315,6 +348,19 @@ describe("Book", () => {
       });
 
       expect(notFavorite.favorited).toBe(false);
+    });
+
+    it("restores cover exactly as provided", () => {
+      const book = Book.restore({
+        ...validRestoreProps,
+        cover: "https://example.com/cover.jpg",
+      });
+
+      expect(book.cover).toBe("https://example.com/cover.jpg");
+
+      const noCover = Book.restore(validRestoreProps);
+
+      expect(noCover.cover).toBeUndefined();
     });
   });
 });

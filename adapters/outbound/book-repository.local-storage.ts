@@ -33,6 +33,7 @@ interface StoredBook {
   observation?: string;
   language?: string;
   favorited?: boolean;
+  cover?: string;
 }
 
 function serializeBook(book: Book): StoredBook {
@@ -46,6 +47,7 @@ function serializeBook(book: Book): StoredBook {
     observation: book.observation,
     language: book.language?.value,
     favorited: book.favorited,
+    cover: book.cover,
   };
 }
 
@@ -64,6 +66,7 @@ function deserializeBook(stored: StoredBook): Book {
     observation: stored.observation,
     language: stored.language !== undefined ? Language.create(stored.language) : undefined,
     favorited: stored.favorited,
+    cover: stored.cover,
   });
 }
 

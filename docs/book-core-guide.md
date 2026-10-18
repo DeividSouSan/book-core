@@ -105,6 +105,7 @@ Cada campo vira um Value Object tipado:
 | `observation` | Não                | `string`        | ausente     | `"Buy second copy"`                      |
 | `language`    | Não                | `string`        | ausente     | `"en"`                                   |
 | `favorited`   | Não                | `boolean`       | ausente     | `true`                                   |
+| `cover`       | Não                | `string`        | ausente     | `"https://example.com/capa.jpg"`         |
 
 Regra de bolso: **para cadastrar, gere um UUID, informe `title`, `authors` (pode ser
 `[]`) e `isbn`.** Todo o resto é opcional.
@@ -213,6 +214,15 @@ Valores aceitos, exatos após remover espaços (sensível a maiúsculas):
 - Ausente significa "não favoritado". Como não há validação, qualquer valor
   booleano é aceito — cabe ao app consumidor decidir como usar essa marca.
 - `book.favorited` lê o valor (`true`, `false` ou `undefined`).
+
+### 5.10 `cover` — URL da capa do livro (opcional)
+
+- URL livre da imagem da capa do livro. Sem validação de formato de URL — cabe
+  ao app consumidor garantir que seja um endereço válido.
+- Espaços nas bordas são removidos (`trim`).
+- Ausente significa "sem capa". Uso típico: link para a imagem da capa em um
+  serviço de hospedagem de imagens.
+- `book.cover` lê o valor (`string` ou `undefined`).
 
 ## 6. Criar vs. restaurar
 
@@ -372,6 +382,7 @@ Book.create(
     observation: "Buy second copy",
     language: "en",
     favorited: true,
+    cover: "https://example.com/capa.jpg",
   },
   "550e8400-e29b-41d4-a716-446655440000",
 );
@@ -398,7 +409,8 @@ Book.create(
    correto? Se não souber, deixe o núcleo validar e repasse o `code`.
 4. `authors` é uma lista? Pode ser `[]`. Item vazio → `AUTHOR.EMPTY`.
 5. Opcionais só envie se souber: `status` exatamente um dos quatro, `rating` inteiro
-   1–5, `language` `pt` ou `en`, `observation` texto livre, `favorited` booleano.
+   1–5, `language` `pt` ou `en`, `observation` texto livre, `favorited` booleano,
+   `cover` URL da capa.
 6. Guarde o `id` usado para buscas futuras (`findById`, `getById`, `delete` recebem
    a string; `book.id.value` lê o valor do livro).
 
