@@ -21,6 +21,23 @@ Escreva código, comentários e descrições de teste em inglês.
 - Composição em vez de imposição: o consumidor pode utilizar apenas parte das funcionalidades sem precisar adotar todas as políticas do núcleo.
 - Extensibilidade: convenções particulares podem ser substituídas ou complementadas sem comprometer o modelo central.
 
+## Atualização do Book: onde validar
+
+- A validação de atualizações fica nos métodos `with*`, não no `save()`.
+- Por que não no `save()`: o erro apareceria na hora de gravar, longe da edição que
+  o causou; `save` é uma porta implementada por cada adapter (memória, localStorage,
+  futuros), e cada um teria que lembrar de validar — esquecer em um recria o buraco;
+  o contrato se mantém simples ("save nunca valida"): o `Book` chega válido porque
+  só nasce de `create` ou `with*`.
+- `Book.restore` confia nos dados por design: ele reidrata o que o repositório
+  devolveu (uso de adapters), sem re-validar. Para alterar um livro, use os `with*`.
+- Limite: cada `with*` garante apenas que a mudança que ele faz não introduz dado
+  inválido — não que o livro inteiro seja válido. Um livro vindo do banco com dado
+  ruim continua ruim após um `with*` de outro campo.
+- Para não divergir: regra compartilhada entre `create` e `with*` mora em helper
+  único (ex.: `ensureNoDuplicateGenreIds`); paridade coberta por teste de tabela
+  (mesma entrada inválida → mesmo `code` nos dois lados).
+
 ## Migração e compatibilidade com dados antigos
 
 - O projeto ainda não foi lançado: não escreva migração nem tolerância a payloads

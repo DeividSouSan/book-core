@@ -118,7 +118,8 @@ export class Book {
   // Reconstitution factory: rebuilds a Book from already-validated domain
   // objects (e.g. loaded from a repository). It does not generate a new id nor
   // re-validate — the data is trusted to have been validated when originally
-  // created.
+  // created. To change a book, use the with* methods; restore only rehydrates
+  // persisted data (adapters) and trusts it without re-validating.
   static restore(props: {
     id: Uuid;
     title: Title;

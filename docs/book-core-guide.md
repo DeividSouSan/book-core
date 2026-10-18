@@ -293,7 +293,9 @@ Book.restore({
 - Entrada: Value Objects já construídos.
 - Não valida de novo. `status` ausente → `TO_READ`.
 - Usado internamente pelos repositórios. Chamar diretamente só ao implementar um
-  adapter próprio.
+  adapter próprio. Para **alterar** um livro use os `with*` (seção seguinte);
+  `restore` é para reidratar o que o repositório devolveu — uso de adapters — e
+  confia nos dados sem re-validar.
 
 ### Atualizar um livro (comportamentos `with*`)
 
@@ -316,6 +318,9 @@ await repository.save(updated); // upsert pelo id
 | `withoutGenre(...)` | Remove o gênero (ausente = no-op silencioso) | `GENRE_ID.EMPTY`                        |
 
 - A instância original nunca muda — os métodos retornam um novo `Book`.
+- Cada `with*` valida só o campo que altera: um livro restaurado com dado ruim
+  (ex.: gênero duplicado vindo do banco) continua ruim após um `withTitle` e é
+  regravado assim — premissa de dado persistido confiável.
 - O núcleo não decide quais campos o app pode editar: use apenas os `with*` que
   precisar (composição em vez de imposição). Métodos para os demais campos
   (`withAuthors`, `withStatus`, ...) seguem o mesmo padrão sob demanda.
@@ -335,7 +340,7 @@ Todo repositório implementa o mesmo contrato:
 
 Notas:
 
-- `save` nunca valida — a validação já aconteceu no `create`. Salvar duas vezes o
+- `save` nunca valida — a validação já aconteceu no `create` ou nos `with*`. Salvar duas vezes o
   mesmo `id` sobrescreve.
 - `findByIsbn` exige um `ISBN` criado com `ISBN.create(...)`. Hífens não importam
   na comparação porque o valor é normalizado.
