@@ -77,11 +77,12 @@ Um **Livro** é um registro de catálogo identificado por um `id` único (UUID).
 - Um objeto inválido nunca existe: se qualquer campo obrigatório for inválido, a criação
   lança um erro de domínio em vez de devolver um livro quebrado.
 
-### Dois ciclos de vida
+### Ciclos de vida
 
 | Ciclo                    | Quando usar                                | O que recebe                                                                                                | Valida?                |
 | ------------------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ---------------------- |
 | `Book.create(props, id)` | Cadastrar um livro novo                    | Tipos primitivos (`string`, `string[]`, `number`) mais o `id` (UUID gerado pelo chamador) como 2º parâmetro | Sim — valida tudo      |
+| `book.with*(...)`        | Alterar campos de um livro existente       | Um campo novo (primitivo validado no método) e um livro novo devolvido                                      | Sim — só o campo novo  |
 | `Book.restore(props)`    | Reidratar um livro já salvo (repositórios) | Value Objects já construídos (`Uuid`, `Title`, `Author[]`, `ISBN`, ...)                                     | Não — confia nos dados |
 
 ### Ler os campos após criar
@@ -293,6 +294,31 @@ Book.restore({
 - Não valida de novo. `status` ausente → `TO_READ`.
 - Usado internamente pelos repositórios. Chamar diretamente só ao implementar um
   adapter próprio.
+
+### Atualizar um livro (comportamentos `with*`)
+
+Os campos do `Book` não são mutáveis: cada `with*`/`without*` devolve um livro
+**novo**, validando o campo novo com o mesmo Value Object do `create`. O fluxo
+completo de atualização é buscar, alterar e salvar de volta:
+
+```ts
+const book = await repository.getById(id); // BOOK.NOT_FOUND se não existe
+const updated = book.withTitle("The Hobbit, or There and Back Again").withoutRating();
+await repository.save(updated); // upsert pelo id
+```
+
+| Método              | O que faz                                    | Erros ao validar                        |
+| ------------------- | -------------------------------------------- | --------------------------------------- |
+| `withTitle(...)`    | Troca o título (validado como `Title`)       | `TITLE.EMPTY`                           |
+| `withRating(...)`   | Define a nota (validada como `Rating`)       | `RATING.INVALID`                        |
+| `withoutRating()`   | Apaga a nota                                 | —                                       |
+| `withGenre(...)`    | Adiciona um gênero (validado como `GenreId`) | `GENRE_ID.EMPTY`, `GENRE_ID.DUPLICATED` |
+| `withoutGenre(...)` | Remove o gênero (ausente = no-op silencioso) | `GENRE_ID.EMPTY`                        |
+
+- A instância original nunca muda — os métodos retornam um novo `Book`.
+- O núcleo não decide quais campos o app pode editar: use apenas os `with*` que
+  precisar (composição em vez de imposição). Métodos para os demais campos
+  (`withAuthors`, `withStatus`, ...) seguem o mesmo padrão sob demanda.
 
 ## 7. Persistência — porta `BookRepository`
 
