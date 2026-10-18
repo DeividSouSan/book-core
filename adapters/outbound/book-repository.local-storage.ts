@@ -55,8 +55,8 @@ function serializeBook(book: Book): StoredBook {
 }
 
 function deserializeGenres(raw: unknown): GenreId[] {
-  // Ausente (payload legado) vira lista vazia: retrocompatível com dados
-  // persistidos antes de genres existir.
+  // Absent (legacy payload) becomes an empty list: backwards-compatible with
+  // data persisted before genres existed.
   if (raw === undefined) {
     return [];
   }

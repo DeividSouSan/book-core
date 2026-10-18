@@ -1,8 +1,8 @@
 import { DomainError } from "./domain.error.js";
 
-// Lançado quando Book.create recebe um identificador de gênero repetido.
-// A comparação é exata (case-sensitive): "Fantasy" e "fantasy" não são
-// tratados como duplicados.
+// Thrown when Book.create receives a repeated genre identifier.
+// The comparison is exact (case-sensitive): "Fantasy" and "fantasy" are not
+// treated as duplicates.
 export class DuplicateGenreIdError extends DomainError {
   constructor(public readonly receivedValue: string) {
     super(`Duplicate genre id (received: "${receivedValue}").`, "GENRE_ID.DUPLICATED");

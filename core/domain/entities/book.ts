@@ -60,9 +60,9 @@ export class Book {
     // is known, and enforcing them would impose app-level rules on the core.
     const status = ReadingStatus.create(props.status ?? TO_READ_STATUS);
 
-    // Converte cada gênero via GenreId.create (propaga EmptyGenreIdError),
-    // rejeita duplicatas por valor exato (case-sensitive) e guarda uma cópia
-    // nova do array, imune a mutações posteriores do array de entrada.
+    // Converts each genre via GenreId.create (propagates EmptyGenreIdError),
+    // rejects exact-value duplicates (case-sensitive) and stores a fresh copy
+    // of the array, immune to later mutations of the input array.
     const genreIds = (props.genres ?? []).map((name) => GenreId.create(name));
     ensureNoDuplicateGenreIds(genreIds);
 
@@ -83,8 +83,8 @@ export class Book {
       Uuid.create(id),
       Title.create(props.title),
       authors,
-      // ISBN é opcional: um app casual pode não ter o ISBN do livro em mãos.
-      // Quando informado, valida normalmente; quando ausente, fica undefined.
+      // ISBN is optional: a casual app may not have the book's ISBN at hand.
+      // When provided it validates as usual; when absent it stays undefined.
       props.isbn !== undefined ? ISBN.create(props.isbn) : undefined,
       status,
       props.rating !== undefined ? Rating.create(props.rating) : undefined,
@@ -134,9 +134,9 @@ export class Book {
   }
 }
 
-// Rejeita identificadores de gênero repetidos em create.
-// A comparação é exata (case-sensitive): \"Fantasy\" e \"fantasy\" são ids
-// distintos e não lançam erro. O primeiro lançamento aponta o valor duplicado.
+// Rejects repeated genre identifiers in create.
+// The comparison is exact (case-sensitive): "Fantasy" and "fantasy" are
+// distinct ids and do not throw. The first throw points at the duplicated value.
 function ensureNoDuplicateGenreIds(genreIds: readonly GenreId[]): void {
   const seen = new Set<string>();
   for (const genre of genreIds) {
