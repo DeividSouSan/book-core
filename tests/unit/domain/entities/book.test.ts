@@ -539,4 +539,62 @@ describe("Book", () => {
       expect(book.genres).toHaveLength(1);
     });
   });
+
+  describe("withRating", () => {
+    it("returns a new book with the new rating", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const rated = book.withRating(4);
+
+      expect(rated.rating?.value).toBe(4);
+      expect(book.rating).toBeUndefined();
+    });
+
+    it("replaces an existing rating", () => {
+      const book = Book.create({ ...validProps, rating: 2 }, FIRST_UUID);
+
+      const rated = book.withRating(5);
+
+      expect(rated.rating?.value).toBe(5);
+      expect(book.rating?.value).toBe(2);
+    });
+
+    it("throws InvalidRatingError with code and received value for an out-of-range rating", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const error = catchError(() => book.withRating(7));
+
+      expect(error).toBeInstanceOf(InvalidRatingError);
+      expect((error as InvalidRatingError).code).toBe("RATING.INVALID");
+      expect((error as InvalidRatingError).receivedValue).toBe(7);
+    });
+  });
+
+  describe("withoutRating", () => {
+    it("erases the rating", () => {
+      const book = Book.create({ ...validProps, rating: 5 }, FIRST_UUID);
+
+      const unrated = book.withoutRating();
+
+      expect(unrated.rating).toBeUndefined();
+    });
+
+    it("is a no-op when the book has no rating", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      const unrated = book.withoutRating();
+
+      expect(unrated.rating).toBeUndefined();
+    });
+
+    it("keeps every other field intact and the original untouched", () => {
+      const book = Book.create({ ...validProps, rating: 5, status: "READ" }, FIRST_UUID);
+
+      const unrated = book.withoutRating();
+
+      expect(unrated.status.value).toBe("READ");
+      expect(unrated.title.value).toBe("The Hobbit");
+      expect(book.rating?.value).toBe(5);
+    });
+  });
 });
