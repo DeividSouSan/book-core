@@ -3,6 +3,8 @@ import { DomainError } from "../../../core/domain/errors/domain.error";
 import { EmptyTitleError } from "../../../core/domain/errors/empty-title.error";
 import { EmptyAuthorError } from "../../../core/domain/errors/empty-author.error";
 import { EmptyISBNError } from "../../../core/domain/errors/empty-isbn.error";
+import { EmptyGenreIdError } from "../../../core/domain/errors/empty-genre-id.error";
+import { DuplicateGenreIdError } from "../../../core/domain/errors/duplicate-genre-id.error";
 import { InvalidISBNLengthError } from "../../../core/domain/errors/invalid-isbn-length.error";
 import { InvalidReadingStatusError } from "../../../core/domain/errors/invalid-reading-status.error";
 import { InvalidRatingError } from "../../../core/domain/errors/invalid-rating.error";
@@ -15,6 +17,7 @@ import { ISBN } from "../../../core/domain/value-objects/isbn";
 import { ReadingStatus } from "../../../core/domain/value-objects/reading-status";
 import { Rating } from "../../../core/domain/value-objects/rating";
 import { Language } from "../../../core/domain/value-objects/language";
+import { GenreId } from "../../../core/domain/value-objects/genre-id";
 import { Uuid } from "../../../core/domain/value-objects/uuid";
 
 function catchError(action: () => unknown): unknown {
@@ -259,6 +262,59 @@ describe("Book", () => {
     });
   });
 
+  describe("genres", () => {
+    it("defaults genres to an empty list", () => {
+      const book = Book.create(validProps, FIRST_UUID);
+
+      expect(book.genres).toEqual([]);
+    });
+
+    it("keeps the order of the provided genres", () => {
+      const book = Book.create(
+        { ...validProps, genres: ["Fantasy", "Sci-Fi", "Mystery"] },
+        FIRST_UUID,
+      );
+
+      expect(book.genres.map((g) => g.value)).toEqual(["Fantasy", "Sci-Fi", "Mystery"]);
+    });
+
+    it("is not affected by later mutation of the input array", () => {
+      const input = ["Fantasy"];
+      const book = Book.create({ ...validProps, genres: input }, FIRST_UUID);
+
+      input.push("Sci-Fi");
+
+      expect(book.genres).toHaveLength(1);
+      expect(book.genres[0].value).toBe("Fantasy");
+    });
+
+    it("throws EmptyGenreIdError when any genre id is blank", () => {
+      const error = catchError(() =>
+        Book.create({ ...validProps, genres: ["Fantasy", ""] }, FIRST_UUID),
+      );
+
+      expect(error).toBeInstanceOf(EmptyGenreIdError);
+      expect((error as EmptyGenreIdError).code).toBe("GENRE_ID.EMPTY");
+      expect((error as EmptyGenreIdError).receivedValue).toBe("");
+    });
+
+    it("throws DuplicateGenreIdError for a repeated identifier, with code and context", () => {
+      const error = catchError(() =>
+        Book.create({ ...validProps, genres: ["Fantasy", "Fantasy"] }, FIRST_UUID),
+      );
+
+      expect(error).toBeInstanceOf(DuplicateGenreIdError);
+      expect((error as DuplicateGenreIdError).code).toBe("GENRE_ID.DUPLICATED");
+      expect((error as DuplicateGenreIdError).duplicatedValue).toBe("Fantasy");
+    });
+
+    it("does not treat 'Fantasy' and 'fantasy' as duplicates", () => {
+      const book = Book.create({ ...validProps, genres: ["Fantasy", "fantasy"] }, FIRST_UUID);
+
+      expect(book.genres).toHaveLength(2);
+    });
+  });
+
   describe("restore", () => {
     const validRestoreProps = {
       id: Uuid.create(FIRST_UUID),
@@ -361,6 +417,19 @@ describe("Book", () => {
       const noCover = Book.restore(validRestoreProps);
 
       expect(noCover.cover).toBeUndefined();
+    });
+
+    it("keeps the given genre ids, and defaults to an empty list when absent", () => {
+      const withGenres = Book.restore({
+        ...validRestoreProps,
+        genres: [GenreId.create("Fantasy"), GenreId.create("Sci-Fi")],
+      });
+
+      expect(withGenres.genres.map((g) => g.value)).toEqual(["Fantasy", "Sci-Fi"]);
+
+      const withoutGenres = Book.restore(validRestoreProps);
+
+      expect(withoutGenres.genres).toEqual([]);
     });
   });
 });

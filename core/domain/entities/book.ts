@@ -5,7 +5,9 @@ import { ReadingStatus } from "../value-objects/reading-status.js";
 import { Rating } from "../value-objects/rating.js";
 import { Language } from "../value-objects/language.js";
 import { Uuid } from "../value-objects/uuid.js";
+import { GenreId } from "../value-objects/genre-id.js";
 import { TO_READ_STATUS } from "../value-objects/reading-status.constants.js";
+import { DuplicateGenreIdError } from "../errors/duplicate-genre-id.error.js";
 
 export class Book {
   private constructor(
@@ -23,6 +25,7 @@ export class Book {
     // cover is a plain image URL with no domain validation beyond trimming
     // surrounding whitespace. Absence means "no cover".
     public readonly cover: string | undefined,
+    public readonly genres: readonly GenreId[],
   ) {}
 
   // The caller generates the id and injects it: the domain never touches a
@@ -39,6 +42,7 @@ export class Book {
       language?: string;
       favorited?: boolean;
       cover?: string;
+      genres?: string[];
     },
     id: string,
   ): Book {
@@ -55,6 +59,18 @@ export class Book {
     // is known, and enforcing them would impose app-level rules on the core.
     const status = ReadingStatus.create(props.status ?? TO_READ_STATUS);
 
+    // Converte cada gênero via GenreId.create (propaga EmptyGenreIdError),
+    // rejeita duplicatas por valor exato (case-sensitive) e guarda uma cópia
+    // nova do array, imune a mutações posteriores do array de entrada.
+    const genreIds = (props.genres ?? []).map((name) => GenreId.create(name));
+    const seen = new Set<string>();
+    for (const genre of genreIds) {
+      if (seen.has(genre.value)) {
+        throw new DuplicateGenreIdError(genre.value);
+      }
+      seen.add(genre.value);
+    }
+
     return new Book(
       Uuid.create(id),
       Title.create(props.title),
@@ -66,6 +82,7 @@ export class Book {
       props.language !== undefined ? Language.create(props.language) : undefined,
       props.favorited,
       props.cover !== undefined ? props.cover.trim() : undefined,
+      [...genreIds],
     );
   }
 
@@ -85,6 +102,7 @@ export class Book {
     language?: Language;
     favorited?: boolean;
     cover?: string;
+    genres?: GenreId[];
   }): Book {
     return new Book(
       props.id,
@@ -97,6 +115,7 @@ export class Book {
       props.language,
       props.favorited,
       props.cover,
+      props.genres ?? [],
     );
   }
 
