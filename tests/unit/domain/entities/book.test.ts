@@ -655,4 +655,60 @@ describe("Book", () => {
       expect(unchanged.genres.map((genre) => genre.value)).toEqual(["Fantasy"]);
     });
   });
+
+  describe("create vs with* (parity)", () => {
+    it.each([
+      {
+        name: "title",
+        code: "TITLE.EMPTY",
+        errorClass: EmptyTitleError,
+        create: () => Book.create({ ...validProps, title: "" }, FIRST_UUID),
+        with: () => {
+          const base = Book.create(validProps, FIRST_UUID);
+          return base.withTitle("");
+        },
+      },
+      {
+        name: "rating",
+        code: "RATING.INVALID",
+        errorClass: InvalidRatingError,
+        create: () => Book.create({ ...validProps, rating: 7 }, FIRST_UUID),
+        with: () => {
+          const base = Book.create(validProps, FIRST_UUID);
+          return base.withRating(7);
+        },
+      },
+      {
+        name: "genre empty",
+        code: "GENRE_ID.EMPTY",
+        errorClass: EmptyGenreIdError,
+        create: () => Book.create({ ...validProps, genres: [""] }, FIRST_UUID),
+        with: () => {
+          const base = Book.create(validProps, FIRST_UUID);
+          return base.withGenre("");
+        },
+      },
+      {
+        name: "genre duplicate",
+        code: "GENRE_ID.DUPLICATED",
+        errorClass: DuplicateGenreIdError,
+        create: () => Book.create({ ...validProps, genres: ["Fantasy", "Fantasy"] }, FIRST_UUID),
+        with: () => {
+          const base = Book.create({ ...validProps, genres: ["Fantasy"] }, FIRST_UUID);
+          return base.withGenre("Fantasy");
+        },
+      },
+    ])(
+      "parity: $name — create and with* reject the same code ($code)",
+      ({ code, errorClass, create, with: withFn }) => {
+        const createdError = catchError(() => create());
+        const withError = catchError(() => withFn());
+
+        expect(createdError).toBeInstanceOf(errorClass);
+        expect((createdError as DomainError).code).toBe(code);
+        expect(withError).toBeInstanceOf(errorClass);
+        expect((withError as DomainError).code).toBe(code);
+      },
+    );
+  });
 });
