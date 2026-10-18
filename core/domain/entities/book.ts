@@ -99,8 +99,7 @@ export class Book {
   // Reconstitution factory: rebuilds a Book from already-validated domain
   // objects (e.g. loaded from a repository). It does not generate a new id nor
   // re-validate — the data is trusted to have been validated when originally
-  // created. Absent status restores to TO_READ so that data persisted before
-  // the status field existed remains restorable.
+  // created.
   static restore(props: {
     id: Uuid;
     title: Title;
