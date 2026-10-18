@@ -192,8 +192,7 @@ Valores aceitos, exatos após remover espaços (sensível a maiúsculas):
 - Omitido na criação → `TO_READ`.
 - Qualquer outra string (ex.: `"PAUSED"`, `"to_read"`) → erro
   `READING_STATUS.INVALID` (contextos: `receivedValue`, `supportedStatuses`).
-- No `restore`, ausência também restaura para `TO_READ` (dados salvos antes do
-  campo existirem).
+- No `restore`, ausência também restaura para `TO_READ`.
 
 ### 5.6 `rating` — nota de 1 a 5 (opcional)
 
@@ -318,7 +317,7 @@ Notas:
 - `BookRepositoryLocalStorage`: JSON achatado sob `DEFAULT_STORAGE_KEY`
   (`"book-core:books"`). Aceita qualquer `StorageLike` (`getItem`/`setItem`). JSON
   inválido ou dado inválido ao recarregar → erro `STORAGE.CORRUPTED` (o app decide
-  se limpa, migra ou exibe o problema).
+  se limpa, recria ou exibe o problema).
 
 ## 8. Erros de domínio
 
