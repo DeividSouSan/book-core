@@ -19,8 +19,8 @@ O `book-core` é o núcleo de domínio de livros: um pacote TypeScript independe
 frameworks, organizado em DDD + Arquitetura Hexagonal.
 
 - **Domínio (`core/domain`):** entidade `Book`, Value Objects (`Title`, `Author`,
-  `ISBN`, `ReadingStatus`, `Rating`, `Language`, `Uuid`) e erros de domínio com `code`
-  legível por máquina.
+  `ISBN`, `ReadingStatus`, `Rating`, `Language`, `Uuid`, `GenreId`) e erros de domínio
+  com `code` legível por máquina.
 - **Aplicação (`core/application`):** a porta `BookRepository` — contrato de persistência
   que qualquer adapter pode implementar.
 - **Adapters (`adapters/outbound`):** `BookRepositoryMemory` (Map em memória, ideal para
@@ -30,6 +30,10 @@ frameworks, organizado em DDD + Arquitetura Hexagonal.
 
 - **Convenções úteis como padrão:** o núcleo oferece comportamentos com defaults sensatos,
   mas não impõe nada que não seja universal.
+- **Convenções validadas, não sugestões:** certas convenções são impostas por validação
+  porque são amplamente aceitas em catálogos de livros: os quatro `ReadingStatus`,
+  `Rating` inteiro de 1 a 5, ISBN-10/13 e a forma UUID. Um objeto inválido nunca deve
+  existir. Já a ordenação de títulos (seção 9) é sugestão substituível.
 - **Composição em vez de imposição:** o consumidor usa só o que precisa e pode substituir
   convenções (ex.: ordenação de títulos) sem quebrar o modelo.
 - **Sem dependência de runtime:** o domínio não importa `node:crypto` nem nenhum módulo de
@@ -52,16 +56,16 @@ book-core/
 
 O que o pacote exporta (`import { ... } from "book-core"`):
 
-| Categoria        | Exports                                                                                                                                                                                                                                                                                                                             |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entidade         | `Book`                                                                                                                                                                                                                                                                                                                              |
-| Value Objects    | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`, `Uuid`, `GenreId`                                                                                                                                                                                                                                                 |
-| Ordenação        | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                                                                                       |
-| Constantes       | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGE_CODES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `SUPPORTED_READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, `UUID_PATTERN`, entre outras                                                                                     |
-| Porta            | `BookRepository` (tipo)                                                                                                                                                                                                                                                                                                             |
-| Adapters         | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                                                                                   |
-| Erros de domínio | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `EmptyGenreIdError`, `DuplicateGenreIdError`, `InvalidLanguageError`, `InvalidUuidError`, `InvalidReadingStatusError`, `InvalidRatingError` |
-| Erro de adapter  | `StorageCorruptedError`                                                                                                                                                                                                                                                                                                             |
+| Categoria        | Exports                                                                                                                                                                                                                                                                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Entidade         | `Book`                                                                                                                                                                                                                                                                                                                                                 |
+| Value Objects    | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`, `Uuid`, `GenreId`                                                                                                                                                                                                                                                                    |
+| Ordenação        | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                                                                                                          |
+| Constantes       | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGE_CODES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `SUPPORTED_READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, `UUID_PATTERN`, entre outras                                                                                                        |
+| Porta            | `BookRepository` (tipo)                                                                                                                                                                                                                                                                                                                                |
+| Adapters         | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                                                                                                      |
+| Erros de domínio | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `EmptyCoverError`, `EmptyGenreIdError`, `DuplicateGenreIdError`, `InvalidLanguageError`, `InvalidUuidError`, `InvalidReadingStatusError`, `InvalidRatingError` |
+| Erro de adapter  | `StorageCorruptedError`                                                                                                                                                                                                                                                                                                                                |
 
 ## 3. A entidade Book
 
@@ -86,7 +90,8 @@ Cada campo vira um Value Object tipado:
 - `book.id.value` — `string` (UUID)
 - `book.title.value` — `string`
 - `book.authors[i].value` — `string` (cada autor)
-- `book.isbn.value` — `string` (ISBN normalizado); `book.isbn.format` — `"isbn10"` ou `"isbn13"`
+- `book.isbn?.value` — `string` (ISBN normalizado, ausente se não informado);
+  `book.isbn?.format` — `"isbn10"` ou `"isbn13"`
 - `book.status.value` — `string`
 - `book.rating?.value` — `number` (ausente se não avaliado)
 - `book.observation` — `string` (ausente se não informado)
@@ -100,7 +105,7 @@ Cada campo vira um Value Object tipado:
 | `id`          | Sim (2º parâmetro) | `string` (UUID) | —           | `"550e8400-e29b-41d4-a716-446655440000"` |
 | `title`       | Sim                | `string`        | —           | `"The Hobbit"`                           |
 | `authors`     | Sim (lista)        | `string[]`      | —           | `["J.R.R. Tolkien"]` ou `[]`             |
-| `isbn`        | Sim                | `string`        | —           | `"978-0-261-10221-7"`                    |
+| `isbn`        | Não                | `string`        | ausente     | `"978-0-261-10221-7"`                    |
 | `status`      | Não                | `string`        | `"TO_READ"` | `"READING"`                              |
 | `rating`      | Não                | `number`        | ausente     | `4`                                      |
 | `observation` | Não                | `string`        | ausente     | `"Buy second copy"`                      |
@@ -109,16 +114,17 @@ Cada campo vira um Value Object tipado:
 | `cover`       | Não                | `string`        | ausente     | `"https://example.com/capa.jpg"`         |
 | `genres`      | Não                | `string[]`      | `[]`        | `["Fantasy", "Sci-Fi"]`                  |
 
-Regra de bolso: **para cadastrar, gere um UUID, informe `title`, `authors` (pode ser
-`[]`) e `isbn`.** Todo o resto é opcional.
+Regra de bolso: **para cadastrar, gere um UUID e informe `title` e `authors` (pode
+ser `[]`).** Todo o resto — inclusive `isbn` — é opcional.
 
 ## 5. Regras por campo
 
 ### 5.1 `id` — identidade injetada (obrigatória)
 
 - O chamador gera e injeta como 2º parâmetro: `Book.create(props, id)`.
-- Deve ser um UUID válido: forma `8-4-4-4-12` hexadecimal, qualquer versão, maiúsculas
-  aceitas. Guardado como está, sem normalização. Inválido → erro `UUID.INVALID`
+- Deve ser um UUID válido: forma `8-4-4-4-12` hexadecimal, qualquer versão. Maiúsculas
+  são aceitas e normalizadas para minúsculas (`"550E8400-..."` vira `"550e8400-..."`),
+  então UUIDs que diferem só na caixa comparam iguais. Inválido → erro `UUID.INVALID`
   (contexto: `receivedValue`).
 - Igualdade (`Book.equals`) compara via `Uuid.equals` — dois livros com o mesmo `id`
   são iguais.
@@ -146,7 +152,10 @@ Regra de bolso: **para cadastrar, gere um UUID, informe `title`, `authors` (pode
   ou quantidade. Se o seu app exige ao menos um autor, essa é regra do app, não
   do núcleo.
 
-### 5.4 `isbn` — ISBN-10 ou ISBN-13 (obrigatório)
+### 5.4 `isbn` — ISBN-10 ou ISBN-13 (opcional)
+
+- Ausente → `book.isbn` fica `undefined`; um app casual pode não ter o ISBN do livro
+  em mãos. Quando informado, é validado como abaixo.
 
 Aceita os dois formatos oficiais:
 
@@ -221,7 +230,8 @@ Valores aceitos, exatos após remover espaços (sensível a maiúsculas):
 
 - URL livre da imagem da capa do livro. Sem validação de formato de URL — cabe
   ao app consumidor garantir que seja um endereço válido.
-- Espaços nas bordas são removidos (`trim`).
+- Espaços nas bordas são removidos (`trim`). Vazio ou só espaços após o trim → erro
+  `COVER.EMPTY` (contexto: `receivedValue`).
 - Ausente significa "sem capa". Uso típico: link para a imagem da capa em um
   serviço de hospedagem de imagens.
 - `book.cover` lê o valor (`string` ou `undefined`).
@@ -231,7 +241,7 @@ Valores aceitos, exatos após remover espaços (sensível a maiúsculas):
 - Lista opcional de identificadores de gênero. `create` aceita `genres?: string[]`; cada item vira um `GenreId` (identificador opaco, validado como não-vazio). `restore` aceita `genres?: GenreId[]`, com default `[]` quando ausente.
 - A ordem de entrada é preservada.
 - O núcleo **não normaliza nem muda caixa**: `"Fantasy"` e `"fantasy"` são identificadores distintos e ambos são aceitos. Qualquer normalização (ex.: minúsculo, alias) é regra do app consumidor.
-- Duplicatas exatas (comparação case-sensitive) em `create` lançam `DuplicateGenreIdError` (`code: "GENRE_ID.DUPLICATED"`, contexto `duplicatedValue`).
+- Duplicatas exatas (comparação case-sensitive) em `create` lançam `DuplicateGenreIdError` (`code: "GENRE_ID.DUPLICATED"`, contexto `receivedValue`).
 - `book.genres` é `readonly GenreId[]`. O núcleo guarda uma cópia do array, então mutar o array de entrada depois de criar não afeta o livro.
 
 ## 6. Criar vs. restaurar
@@ -243,7 +253,7 @@ Book.create(
   {
     title: string;
     authors: string[];
-    isbn: string;
+    isbn?: string;
     status?: string;
     rating?: number;
     observation?: string;
@@ -268,11 +278,13 @@ Book.restore({
   id: Uuid;
   title: Title;
   authors: Author[];
-  isbn: ISBN;
+  isbn?: ISBN;
   status?: ReadingStatus;
   rating?: Rating;
   observation?: string;
   language?: Language;
+  favorited?: boolean;
+  cover?: string;
   genres?: GenreId[];
 }): Book
 ```
@@ -329,7 +341,8 @@ Nem todo erro carrega `receivedValue`: `BookNotFoundError` traz `bookId`, e
 | `LANGUAGE.INVALID`        | `InvalidLanguageError`       | Código fora de `pt`, `en`                     | `supportedLanguages: string[]`                     |
 | `UUID.INVALID`            | `InvalidUuidError`           | `id` fora da forma UUID `8-4-4-4-12`          | `receivedValue: string`                            |
 | `GENRE_ID.EMPTY`          | `EmptyGenreIdError`          | Identificador de gênero vazio ou só espaços   | `receivedValue: string`                            |
-| `GENRE_ID.DUPLICATED`     | `DuplicateGenreIdError`      | Identificador de gênero repetido em `create`  | `duplicatedValue: string`                          |
+| `GENRE_ID.DUPLICATED`     | `DuplicateGenreIdError`      | Identificador de gênero repetido em `create`  | `receivedValue: string`                            |
+| `COVER.EMPTY`             | `EmptyCoverError`            | Cover vazio ou só espaços                     | `receivedValue: string`                            |
 | `BOOK.NOT_FOUND`          | `BookNotFoundError`          | `getById`/`delete` com `id` inexistente       | `bookId: string`                                   |
 | `STORAGE.CORRUPTED`       | `StorageCorruptedError`      | Storage ilegível (JSON ruim ou dado inválido) | `key: string`, `cause?: unknown`                   |
 
@@ -372,13 +385,25 @@ não impõe: o consumidor pode injetar a própria estratégia.
 Assinatura: `Book.create(dados, id)` — o `id` (UUID gerado pelo chamador) é o 2º
 parâmetro, não vai dentro do objeto de dados.
 
-### Cadastro mínimo válido (`status` vira `TO_READ`)
+### Cadastro mínimo válido (sem ISBN; `status` vira `TO_READ`)
 
 ```ts
 Book.create(
   {
     title: "The Hobbit",
     authors: [],
+  },
+  "550e8400-e29b-41d4-a716-446655440000",
+);
+```
+
+### Cadastro com ISBN informado
+
+```ts
+Book.create(
+  {
+    title: "The Hobbit",
+    authors: ["J.R.R. Tolkien"],
     isbn: "978-0-261-10221-7",
   },
   "550e8400-e29b-41d4-a716-446655440000",
@@ -421,8 +446,9 @@ Book.create(
 1. Gere um UUID válido (ex.: `crypto.randomUUID()`) e passe como 2º parâmetro.
    Inválido → `UUID.INVALID`.
 2. Tenho `title` não-vazio? Se não, rejeite antes de chamar o núcleo.
-3. Tenho `isbn` com 10 ou 13 dígitos (ignorando hífens/espaços) e dígito verificador
-   correto? Se não souber, deixe o núcleo validar e repasse o `code`.
+3. Tenho `isbn`? É opcional — se informar, precisa ter 10 ou 13 dígitos (ignorando
+   hífens/espaços) e dígito verificador correto; se não souber, deixe o núcleo
+   validar e repasse o `code`.
 4. `authors` é uma lista? Pode ser `[]`. Item vazio → `AUTHOR.EMPTY`.
 5. Opcionais só envie se souber: `status` exatamente um dos quatro, `rating` inteiro
    1–5, `language` `pt` ou `en`, `observation` texto livre, `favorited` booleano,
@@ -451,6 +477,14 @@ O que o núcleo **não** faz (essas são regras do app consumidor):
   Antes o núcleo gerava via `node:crypto`; agora o chamador gera e injeta.
 - `book.id` é um `Uuid`, não mais `string`: leia com `book.id.value`.
 - `Book.restore` recebe `id: Uuid` (use `Uuid.create(...)`).
+- `isbn` em `Book.create`/`Book.restore` agora é opcional: `book.isbn` pode ser
+  `undefined` — leia com `book.isbn?.value`.
+- `Uuid.create` normaliza para minúsculas: UUIDs informados em maiúsculas são
+  armazenados em minúsculas e comparam iguais aos equivalentes em minúsculas.
+- `Book.create` agora rejeita `cover` vazio ou só espaços com `COVER.EMPTY` (antes
+  virava string vazia).
+- `GENRE_ID.DUPLICATED` (`DuplicateGenreIdError`) expõe o campo de contexto
+  `receivedValue` (antes `duplicatedValue`).
 - Repositórios: `findById`/`getById`/`delete` continuam recebendo `string`.
 - Dados persistidos com id não-UUID falham ao carregar com `STORAGE.CORRUPTED`
   (antes passavam) — migre os ids ou trate a recuperação no app.

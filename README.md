@@ -21,7 +21,7 @@ Isso cria um symlink. O script `prepare` do pacote roda `npm run build` automati
 ```ts
 import { Book, BookRepositoryMemory, BookRepositoryLocalStorage, DomainError } from "book-core";
 
-// Criar um livro (o chamador gera o id e injeta; valida id, título, autores, ISBN, status, rating e idioma)
+// Criar um livro (o chamador gera o id e injeta; valida id, título, autores, ISBN (quando informado), status, rating e idioma)
 const book = Book.create(
   {
     title: "The Hobbit",
@@ -59,16 +59,16 @@ books.sort((a, b) => a.title.sortKey(onlyThe).localeCompare(b.title.sortKey(only
 
 ## O que o pacote exporta
 
-| Categoria            | Exports                                                                                                                                                                                                                                                                                                                             |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entidade             | `Book`                                                                                                                                                                                                                                                                                                                              |
-| Value Objects        | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`, `Uuid`, `GenreId`                                                                                                                                                                                                                                                 |
-| Ordenação            | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                                                                                       |
-| Constantes           | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, `UUID_PATTERN`, entre outras                                                                                                    |
-| Portas (interfaces)  | `BookRepository` (tipo)                                                                                                                                                                                                                                                                                                             |
-| Adaptadores          | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                                                                                   |
-| Erros de domínio     | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `EmptyGenreIdError`, `DuplicateGenreIdError`, `InvalidLanguageError`, `InvalidReadingStatusError`, `InvalidRatingError`, `InvalidUuidError` |
-| Erros de adaptadores | `StorageCorruptedError`                                                                                                                                                                                                                                                                                                             |
+| Categoria            | Exports                                                                                                                                                                                                                                                                                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Entidade             | `Book`                                                                                                                                                                                                                                                                                                                                                 |
+| Value Objects        | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`, `Uuid`, `GenreId`                                                                                                                                                                                                                                                                    |
+| Ordenação            | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                                                                                                          |
+| Constantes           | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGE_CODES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `SUPPORTED_READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, `UUID_PATTERN`, entre outras                                                                                                        |
+| Portas (interfaces)  | `BookRepository` (tipo)                                                                                                                                                                                                                                                                                                                                |
+| Adaptadores          | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                                                                                                      |
+| Erros de domínio     | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `EmptyCoverError`, `EmptyGenreIdError`, `DuplicateGenreIdError`, `InvalidLanguageError`, `InvalidReadingStatusError`, `InvalidRatingError`, `InvalidUuidError` |
+| Erros de adaptadores | `StorageCorruptedError`                                                                                                                                                                                                                                                                                                                                |
 
 ## Tratando erros
 
@@ -94,7 +94,7 @@ try {
 }
 ```
 
-Principais códigos: `BOOK.NOT_FOUND`, `ISBN.EMPTY`, `ISBN.INVALID_LENGTH`, `ISBN.INVALID_CHARACTERS`, `ISBN.INVALID_CHECKSUM`, `TITLE.EMPTY`, `AUTHOR.EMPTY`, `LANGUAGE.INVALID`, `READING_STATUS.INVALID`, `RATING.INVALID`, `UUID.INVALID`, `STORAGE.CORRUPTED`.
+Principais códigos: `BOOK.NOT_FOUND`, `ISBN.EMPTY`, `ISBN.INVALID_LENGTH`, `ISBN.INVALID_CHARACTERS`, `ISBN.INVALID_CHECKSUM`, `TITLE.EMPTY`, `AUTHOR.EMPTY`, `COVER.EMPTY`, `GENRE_ID.EMPTY`, `GENRE_ID.DUPLICATED`, `LANGUAGE.INVALID`, `READING_STATUS.INVALID`, `RATING.INVALID`, `UUID.INVALID`, `STORAGE.CORRUPTED`.
 
 ## Estrutura de pastas
 
