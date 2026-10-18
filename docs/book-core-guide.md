@@ -52,16 +52,16 @@ book-core/
 
 O que o pacote exporta (`import { ... } from "book-core"`):
 
-| Categoria        | Exports                                                                                                                                                                                                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entidade         | `Book`                                                                                                                                                                                                                                                                                |
-| Value Objects    | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`, `Uuid`                                                                                                                                                                                                              |
-| Ordenação        | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                                         |
-| Constantes       | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGE_CODES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `SUPPORTED_READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, `UUID_PATTERN`, entre outras                                       |
-| Porta            | `BookRepository` (tipo)                                                                                                                                                                                                                                                               |
-| Adapters         | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                                     |
-| Erros de domínio | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `InvalidLanguageError`, `InvalidUuidError`, `InvalidReadingStatusError`, `InvalidRatingError` |
-| Erro de adapter  | `StorageCorruptedError`                                                                                                                                                                                                                                                               |
+| Categoria        | Exports                                                                                                                                                                                                                                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entidade         | `Book`                                                                                                                                                                                                                                                                                                                              |
+| Value Objects    | `ISBN`, `Title`, `Author`, `Language`, `ReadingStatus`, `Rating`, `Uuid`, `GenreId`                                                                                                                                                                                                                                                 |
+| Ordenação        | `defaultTitleSortKey`, `removeLeadingArticles`, `TitleSortKeyStrategy` (tipo)                                                                                                                                                                                                                                                       |
+| Constantes       | `ISBN_10_LENGTH`, `ISBN_13_LENGTH`, `SUPPORTED_LANGUAGE_CODES`, `MINIMUM_RATING`, `MAXIMUM_RATING`, `SUPPORTED_READING_STATUSES`, `DEFAULT_TITLE_ARTICLES`, `ENGLISH_TITLE_ARTICLES`, `PORTUGUESE_TITLE_ARTICLES`, `UUID_PATTERN`, entre outras                                                                                     |
+| Porta            | `BookRepository` (tipo)                                                                                                                                                                                                                                                                                                             |
+| Adapters         | `BookRepositoryMemory`, `BookRepositoryLocalStorage`, `StorageLike` (tipo), `DEFAULT_STORAGE_KEY`                                                                                                                                                                                                                                   |
+| Erros de domínio | `DomainError` (base), `BookNotFoundError`, `EmptyISBNError`, `InvalidISBNLengthError`, `InvalidISBNCharactersError`, `InvalidISBNChecksumError`, `EmptyTitleError`, `EmptyAuthorError`, `EmptyGenreIdError`, `DuplicateGenreIdError`, `InvalidLanguageError`, `InvalidUuidError`, `InvalidReadingStatusError`, `InvalidRatingError` |
+| Erro de adapter  | `StorageCorruptedError`                                                                                                                                                                                                                                                                                                             |
 
 ## 3. A entidade Book
 
@@ -91,6 +91,7 @@ Cada campo vira um Value Object tipado:
 - `book.rating?.value` — `number` (ausente se não avaliado)
 - `book.observation` — `string` (ausente se não informado)
 - `book.language?.value` — `string` (ausente se desconhecido)
+- `book.genres[i].value` — `string` (cada gênero associado)
 
 ## 4. Campos do Book — referência rápida
 
@@ -106,6 +107,7 @@ Cada campo vira um Value Object tipado:
 | `language`    | Não                | `string`        | ausente     | `"en"`                                   |
 | `favorited`   | Não                | `boolean`       | ausente     | `true`                                   |
 | `cover`       | Não                | `string`        | ausente     | `"https://example.com/capa.jpg"`         |
+| `genres`      | Não                | `string[]`      | `[]`        | `["Fantasy", "Sci-Fi"]`                  |
 
 Regra de bolso: **para cadastrar, gere um UUID, informe `title`, `authors` (pode ser
 `[]`) e `isbn`.** Todo o resto é opcional.
@@ -224,6 +226,14 @@ Valores aceitos, exatos após remover espaços (sensível a maiúsculas):
   serviço de hospedagem de imagens.
 - `book.cover` lê o valor (`string` ou `undefined`).
 
+### 5.11 `genres` — gêneros associados (opcional)
+
+- Lista opcional de identificadores de gênero. `create` aceita `genres?: string[]`; cada item vira um `GenreId` (identificador opaco, validado como não-vazio). `restore` aceita `genres?: GenreId[]`, com default `[]` quando ausente.
+- A ordem de entrada é preservada.
+- O núcleo **não normaliza nem muda caixa**: `"Fantasy"` e `"fantasy"` são identificadores distintos e ambos são aceitos. Qualquer normalização (ex.: minúsculo, alias) é regra do app consumidor.
+- Duplicatas exatas (comparação case-sensitive) em `create` lançam `DuplicateGenreIdError` (`code: "GENRE_ID.DUPLICATED"`, contexto `duplicatedValue`).
+- `book.genres` é `readonly GenreId[]`. O núcleo guarda uma cópia do array, então mutar o array de entrada depois de criar não afeta o livro.
+
 ## 6. Criar vs. restaurar
 
 ### `Book.create(props, id)`
@@ -238,6 +248,7 @@ Book.create(
     rating?: number;
     observation?: string;
     language?: string;
+    genres?: string[];
   },
   id: string, // UUID gerado pelo chamador
 ): Book
@@ -260,6 +271,7 @@ Book.restore({
   rating?: Rating;
   observation?: string;
   language?: Language;
+  genres?: GenreId[];
 }): Book
 ```
 
@@ -314,6 +326,8 @@ Nem todo erro carrega `receivedValue`: `BookNotFoundError` traz `bookId`, e
 | `RATING.INVALID`          | `InvalidRatingError`         | Nota não-inteira ou fora de 1–5               | `minimum`, `maximum`                               |
 | `LANGUAGE.INVALID`        | `InvalidLanguageError`       | Código fora de `pt`, `en`                     | `supportedLanguages: string[]`                     |
 | `UUID.INVALID`            | `InvalidUuidError`           | `id` fora da forma UUID `8-4-4-4-12`          | `receivedValue: string`                            |
+| `GENRE_ID.EMPTY`          | `EmptyGenreIdError`          | Identificador de gênero vazio ou só espaços   | `receivedValue: string`                            |
+| `GENRE_ID.DUPLICATED`     | `DuplicateGenreIdError`      | Identificador de gênero repetido em `create`  | `duplicatedValue: string`                          |
 | `BOOK.NOT_FOUND`          | `BookNotFoundError`          | `getById`/`delete` com `id` inexistente       | `bookId: string`                                   |
 | `STORAGE.CORRUPTED`       | `StorageCorruptedError`      | Storage ilegível (JSON ruim ou dado inválido) | `key: string`, `cause?: unknown`                   |
 
@@ -424,6 +438,10 @@ O que o núcleo **não** faz (essas são regras do app consumidor):
   o UUID e escolher um adapter.
 - Não impõe idiomas além de `pt` e `en`, nem artigos de ordenação além dos defaults
   — tudo substituível.
+- Não normaliza nomes de gênero, não deduplica conceitos e não mantém catálogo de
+  gêneros — `"Fantasy"` e `"fantasy"` são identificadores distintos e ambos são
+  aceitos. Normalização, catálogo de gêneros e ciclo de vida (criar/renomear/remover
+  gêneros) são extensões do app consumidor.
 
 ## 12. Nota de migração (breaking change)
 
