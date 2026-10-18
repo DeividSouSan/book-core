@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Title } from "../../../core/domain/value-objects/title";
-import { defaultTitleSortKey } from "../../../core/domain/value-objects/sort-key";
+import { Title } from "../../../../core/domain/value-objects/title";
+import { defaultTitleSortKey } from "../../../../core/domain/value-objects/sort-key";
 
 describe("Title.sortKey", () => {
   it("returns the default sort key when no strategy is given", () => {

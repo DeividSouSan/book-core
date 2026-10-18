@@ -3,7 +3,7 @@ import {
   ENGLISH_TITLE_ARTICLES,
   PORTUGUESE_TITLE_ARTICLES,
   DEFAULT_TITLE_ARTICLES,
-} from "../../../core/domain/value-objects/articles.constants";
+} from "../../../../core/domain/value-objects/articles.constants";
 
 describe("articles constants", () => {
   it("exposes English articles", () => {

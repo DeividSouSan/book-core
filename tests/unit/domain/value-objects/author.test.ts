@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { EmptyAuthorError } from "../../../core/domain/errors/empty-author.error";
-import { Author } from "../../../core/domain/value-objects/author";
+import { EmptyAuthorError } from "../../../../core/domain/errors/empty-author.error";
+import { Author } from "../../../../core/domain/value-objects/author";
 
 function catchError(action: () => unknown): unknown {
   try {

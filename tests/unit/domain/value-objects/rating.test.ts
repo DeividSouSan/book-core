@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { InvalidRatingError } from "../../../core/domain/errors/invalid-rating.error";
-import { Rating } from "../../../core/domain/value-objects/rating";
+import { InvalidRatingError } from "../../../../core/domain/errors/invalid-rating.error";
+import { Rating } from "../../../../core/domain/value-objects/rating";
 
 function catchError(action: () => unknown): unknown {
   try {

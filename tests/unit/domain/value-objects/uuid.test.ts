@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { InvalidUuidError } from "../../../core/domain/errors/invalid-uuid.error";
-import { Uuid } from "../../../core/domain/value-objects/uuid";
+import { InvalidUuidError } from "../../../../core/domain/errors/invalid-uuid.error";
+import { Uuid } from "../../../../core/domain/value-objects/uuid";
 
 function catchError(action: () => unknown): unknown {
   try {

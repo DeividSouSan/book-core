@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { InvalidReadingStatusError } from "../../../core/domain/errors/invalid-reading-status.error";
-import { ReadingStatus } from "../../../core/domain/value-objects/reading-status";
+import { InvalidReadingStatusError } from "../../../../core/domain/errors/invalid-reading-status.error";
+import { ReadingStatus } from "../../../../core/domain/value-objects/reading-status";
 
 function catchError(action: () => unknown): unknown {
   try {

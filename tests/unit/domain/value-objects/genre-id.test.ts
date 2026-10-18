@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { EmptyGenreIdError } from "../../../core/domain/errors/empty-genre-id.error";
-import { GenreId } from "../../../core/domain/value-objects/genre-id";
+import { EmptyGenreIdError } from "../../../../core/domain/errors/empty-genre-id.error";
+import { GenreId } from "../../../../core/domain/value-objects/genre-id";
 
 function catchError(action: () => unknown): unknown {
   try {

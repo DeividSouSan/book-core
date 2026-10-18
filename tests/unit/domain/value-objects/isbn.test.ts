@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DomainError } from "../../../core/domain/errors/domain.error";
-import { EmptyISBNError } from "../../../core/domain/errors/empty-isbn.error";
-import { InvalidISBNCharactersError } from "../../../core/domain/errors/invalid-isbn-characters.error";
-import { InvalidISBNChecksumError } from "../../../core/domain/errors/invalid-isbn-checksum.error";
-import { InvalidISBNLengthError } from "../../../core/domain/errors/invalid-isbn-length.error";
-import { ISBN } from "../../../core/domain/value-objects/isbn";
+import { DomainError } from "../../../../core/domain/errors/domain.error";
+import { EmptyISBNError } from "../../../../core/domain/errors/empty-isbn.error";
+import { InvalidISBNCharactersError } from "../../../../core/domain/errors/invalid-isbn-characters.error";
+import { InvalidISBNChecksumError } from "../../../../core/domain/errors/invalid-isbn-checksum.error";
+import { InvalidISBNLengthError } from "../../../../core/domain/errors/invalid-isbn-length.error";
+import { ISBN } from "../../../../core/domain/value-objects/isbn";
 
 function catchError(action: () => unknown): unknown {
   try {

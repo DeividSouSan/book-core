@@ -3,12 +3,12 @@ import {
   removeLeadingArticles,
   defaultTitleSortKey,
   type TitleSortKeyStrategy,
-} from "../../../core/domain/value-objects/sort-key";
+} from "../../../../core/domain/value-objects/sort-key";
 import {
   ENGLISH_TITLE_ARTICLES,
   PORTUGUESE_TITLE_ARTICLES,
   DEFAULT_TITLE_ARTICLES,
-} from "../../../core/domain/value-objects/articles.constants";
+} from "../../../../core/domain/value-objects/articles.constants";
 
 function sortWith(strategy: TitleSortKeyStrategy, titles: string[]): string[] {
   return [...titles].sort((a, b) => strategy(a).localeCompare(strategy(b)));

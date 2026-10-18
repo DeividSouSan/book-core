@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { DomainError } from "../../../core/domain/errors/domain.error";
-import { EmptyTitleError } from "../../../core/domain/errors/empty-title.error";
-import { EmptyAuthorError } from "../../../core/domain/errors/empty-author.error";
-import { EmptyISBNError } from "../../../core/domain/errors/empty-isbn.error";
-import { EmptyCoverError } from "../../../core/domain/errors/empty-cover.error";
-import { EmptyGenreIdError } from "../../../core/domain/errors/empty-genre-id.error";
-import { DuplicateGenreIdError } from "../../../core/domain/errors/duplicate-genre-id.error";
-import { InvalidISBNLengthError } from "../../../core/domain/errors/invalid-isbn-length.error";
-import { InvalidReadingStatusError } from "../../../core/domain/errors/invalid-reading-status.error";
-import { InvalidRatingError } from "../../../core/domain/errors/invalid-rating.error";
-import { InvalidLanguageError } from "../../../core/domain/errors/invalid-language.error";
-import { InvalidUuidError } from "../../../core/domain/errors/invalid-uuid.error";
-import { Book } from "../../../core/domain/entities/book";
-import { Title } from "../../../core/domain/value-objects/title";
-import { Author } from "../../../core/domain/value-objects/author";
-import { ISBN } from "../../../core/domain/value-objects/isbn";
-import { ReadingStatus } from "../../../core/domain/value-objects/reading-status";
-import { Rating } from "../../../core/domain/value-objects/rating";
-import { Language } from "../../../core/domain/value-objects/language";
-import { GenreId } from "../../../core/domain/value-objects/genre-id";
-import { Uuid } from "../../../core/domain/value-objects/uuid";
+import { DomainError } from "../../../../core/domain/errors/domain.error";
+import { EmptyTitleError } from "../../../../core/domain/errors/empty-title.error";
+import { EmptyAuthorError } from "../../../../core/domain/errors/empty-author.error";
+import { EmptyISBNError } from "../../../../core/domain/errors/empty-isbn.error";
+import { EmptyCoverError } from "../../../../core/domain/errors/empty-cover.error";
+import { EmptyGenreIdError } from "../../../../core/domain/errors/empty-genre-id.error";
+import { DuplicateGenreIdError } from "../../../../core/domain/errors/duplicate-genre-id.error";
+import { InvalidISBNLengthError } from "../../../../core/domain/errors/invalid-isbn-length.error";
+import { InvalidReadingStatusError } from "../../../../core/domain/errors/invalid-reading-status.error";
+import { InvalidRatingError } from "../../../../core/domain/errors/invalid-rating.error";
+import { InvalidLanguageError } from "../../../../core/domain/errors/invalid-language.error";
+import { InvalidUuidError } from "../../../../core/domain/errors/invalid-uuid.error";
+import { Book } from "../../../../core/domain/entities/book";
+import { Title } from "../../../../core/domain/value-objects/title";
+import { Author } from "../../../../core/domain/value-objects/author";
+import { ISBN } from "../../../../core/domain/value-objects/isbn";
+import { ReadingStatus } from "../../../../core/domain/value-objects/reading-status";
+import { Rating } from "../../../../core/domain/value-objects/rating";
+import { Language } from "../../../../core/domain/value-objects/language";
+import { GenreId } from "../../../../core/domain/value-objects/genre-id";
+import { Uuid } from "../../../../core/domain/value-objects/uuid";
 
 function catchError(action: () => unknown): unknown {
   try {
